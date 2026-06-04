@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Property CRM</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      padding: 32px 24px;
+    }
+
+    .logo-wrap {
+      max-width: 860px;
+      margin: 0 auto 16px;
+      text-align: left;
+    }
+
+    .logo-wrap img {
+      width: 140px;
+    }
+
+    .header {
+      max-width: 860px;
+      margin: 0 auto 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      color: #1a1a1a;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 3px;
+    }
+
+    button.add-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+
+    button.add-btn:hover { background: #2563eb; }
+
+    .entries {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .entry {
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      padding: 18px 20px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .entry-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 240px;
+      flex-shrink: 0;
+    }
+
+    .entry-left label,
+    .entry-right label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #9ca3af;
+    }
+
+    .entry-left input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      color: #1a1a1a;
+    }
+
+    .entry-left input:focus {
+      border-color: #3b82f6;
+    }
+
+    .entry-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .entry-right textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+      line-height: 1.5;
+      color: #1a1a1a;
+      transition: border-color 0.2s;
+    }
+
+    .entry-right textarea:focus {
+      border-color: #3b82f6;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #d1d5db;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      line-height: 1;
+      transition: color 0.2s, background 0.2s;
+      flex-shrink: 0;
+      margin-top: 20px;
+    }
+
+    .delete-btn:hover {
+      color: #ef4444;
+      background: #fef2f2;
+    }
+
+    .empty {
+      text-align: center;
+      color: #9ca3af;
+      font-size: 15px;
+      padding: 60px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo-wrap">
+    <img src="agp-logo.png" alt="All Group Properties" />
+  </div>
+  <div class="header">
+    <div>
+      <h1>Property CRM</h1>
+      <p>Track your progress on each property.</p>
+    </div>
+    <button class="add-btn" onclick="addEntry()">+ Add Property</button>
+  </div>
+
+  <div class="entries" id="entries"></div>
+
+  <script>
+    const STORAGE_KEY = "realestate_crm_entries";
+
+    function load() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function save(entries) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }
+
+    function render() {
+      const entries = load();
+      const container = document.getElementById("entries");
+
+      if (entries.length === 0) {
+        container.innerHTML = '<p class="empty">No properties yet. Click "+ Add Property" to get started.</p>';
+        return;
+      }
+
+      container.innerHTML = entries.map((e, i) => `
+        <div class="entry" id="entry-${i}">
+          <div class="entry-left">
+            <label>Address</label>
+            <input
+              type="text"
+              value="${escHtml(e.address)}"
+              placeholder="123 Main St"
+              oninput="updateField(${i}, 'address', this.value)"
+            />
+          </div>
+          <div class="entry-right">
+            <label>Progress / Notes</label>
+            <textarea
+              placeholder="Where are you at with this property..."
+              oninput="updateField(${i}, 'notes', this.value)"
+            >${escHtml(e.notes)}</textarea>
+          </div>
+          <button class="delete-btn" onclick="deleteEntry(${i})" title="Remove">✕</button>
+        </div>
+      `).join("");
+    }
+
+    function escHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function addEntry() {
+      const entries = load();
+      entries.push({ address: "", notes: "" });
+      save(entries);
+      render();
+      // focus the new address input
+      const inputs = document.querySelectorAll(".entry-left input");
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    }
+
+    function updateField(index, field, value) {
+      const entries = load();
+      if (entries[index]) {
+        entries[index][field] = value;
+        save(entries);
+      }
+    }
+
+    function deleteEntry(index) {
+      const entries = load();
+      entries.splice(index, 1);
+      save(entries);
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>

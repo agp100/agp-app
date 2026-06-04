@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>All Group Properties</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AGP" />
+  <meta name="theme-color" content="#2d5a27" />
+  <style>
+    /* ── Reset & Base ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    }
+    .header img { width: 68px; }
+    .tabs { display: flex; gap: 4px; }
+    .tab-btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 8px;
+      background: none;
+      font-size: 14px;
+      font-weight: 600;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { background: #f3f4f6; color: #1a1a1a; }
+    .tab-btn.active { background: #2d5a27; color: white; }
+
+    /* ── Page layout ── */
+    .page { max-width: 820px; margin: 0 auto; padding: 32px 24px; }
+    .hidden { display: none !important; }
+
+    /* ── Cards ── */
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      margin-bottom: 18px;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+
+    /* ── Form elements ── */
+    .field { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+    .field-row { display: flex; gap: 14px; margin-bottom: 14px; }
+    .field-row:last-child { margin-bottom: 0; }
+    label { font-size: 12px; font-weight: 600; color: #374151; }
+    input, textarea {
+      padding: 10px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 9px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      color: #1a1a1a;
+      width: 100%;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus { border-color: #2d5a27; }
+    .badge {
+      font-size: 10px; font-weight: 500; color: #6b7280;
+      background: #f3f4f6; padding: 2px 6px; border-radius: 4px; margin-left: 6px;
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      width: 100%; padding: 13px;
+      background: #2d5a27; color: white;
+      border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #1e3f1b; }
+    .btn-secondary {
+      flex: 1; padding: 11px;
+      background: white; color: #374151;
+      border: 1.5px solid #e2e8f0; border-radius: 10px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; margin-top: 10px;
+    }
+    .btn-secondary:hover { border-color: #2d5a27; color: #2d5a27; background: #f0faf0; }
+    .btn-secondary.success { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
+    .btn-row { display: flex; gap: 10px; }
+
+    /* ── Output areas ── */
+    .output-box {
+      background: #f8fafc; border: 1.5px solid #e2e8f0;
+      border-radius: 10px; padding: 16px;
+      font-size: 14px; color: #1a1a1a; line-height: 1.7;
+      min-height: 72px;
+    }
+    .output-box .placeholder { color: #9ca3af; font-style: italic; }
+
+    /* ── LOI Type buttons ── */
+    .type-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .type-btn {
+      padding: 14px 8px; border: 2px solid #e2e8f0; border-radius: 12px;
+      background: white; cursor: pointer; text-align: center;
+      transition: all 0.15s; font-size: 13px; font-weight: 600; color: #374151;
+    }
+    .type-btn:hover { border-color: #86efac; background: #f0faf0; }
+    .type-btn.active { border-color: #2d5a27; background: #f0faf0; color: #2d5a27; }
+    .type-btn .icon { font-size: 20px; display: block; margin-bottom: 5px; }
+    .type-btn .desc { font-size: 11px; font-weight: 400; color: #6b7280; margin-top: 2px; }
+
+    /* ── CRM ── */
+    .crm-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .crm-header h2 { font-size: 18px; color: #1a1a1a; }
+    .entry {
+      background: white; border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      padding: 16px 18px; display: flex; gap: 14px; align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .entry-addr { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; }
+    .entry-notes { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+    .entry-notes textarea { min-height: 72px; resize: vertical; line-height: 1.5; }
+    .del-btn {
+      background: none; border: none; color: #d1d5db; font-size: 17px;
+      cursor: pointer; padding: 4px 6px; border-radius: 6px; margin-top: 20px; flex-shrink: 0;
+      transition: color 0.2s, background 0.2s;
+    }
+    .del-btn:hover { color: #ef4444; background: #fef2f2; }
+    .crm-empty { text-align: center; color: #9ca3af; padding: 50px 0; font-size: 15px; }
+
+    /* ── Text Generator extras ── */
+    .api-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0;
+    }
+    .api-toggle {
+      font-size: 12px; color: #9ca3af; cursor: pointer;
+      background: none; border: none; padding: 0; font-family: inherit;
+      text-decoration: underline;
+    }
+    .api-toggle:hover { color: #6b7280; }
+    .api-hint { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+    .crm-notice {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; margin-top: 10px;
+      background: #f0fdf4; border: 1px solid #86efac;
+      border-radius: 8px; font-size: 13px; color: #16a34a;
+    }
+    .ai-status {
+      font-size: 12px; color: #9ca3af; margin-top: 8px;
+      font-style: italic; min-height: 18px;
+    }
+
+    /* ── Email preview ── */
+    .email-box {
+      background: #f8fafc; border: 1.5px solid #e2e8f0;
+      border-radius: 10px; padding: 16px;
+      font-size: 13px; line-height: 1.8; color: #1a1a1a;
+      white-space: pre-wrap; font-family: inherit;
+    }
+
+    /* ══════════════════════════════════════
+       PRINT / PDF STYLES
+       ══════════════════════════════════════ */
+    #print-view { display: none; }
+
+    @page {
+      margin: 0;
+      size: letter portrait;
+    }
+
+    @media print {
+      body > *:not(#print-view) { display: none !important; }
+      #print-view {
+        display: block !important;
+        font-family: "Georgia", "Times New Roman", serif;
+        color: #1a1a1a;
+        padding: 0;
+        margin: 0;
+      }
+
+      /* all layouts hidden by default, shown by body class */
+      .pv { display: none; padding: 56px 68px; }
+
+      /* ── Cash layout ── */
+      body.pv-cash #pv-cash { display: block; }
+
+      #pv-cash .pv-logo { display: block; width: 190px; margin: 0 auto 40px; }
+      #pv-cash .pv-title {
+        text-align: center; font-size: 26px; font-weight: bold;
+        color: #1a2e1a; margin-bottom: 6px; font-family: inherit; letter-spacing: 0.02em;
+      }
+      #pv-cash .pv-address {
+        text-align: center; font-size: 13px; color: #6b7280; margin-bottom: 10px;
+      }
+      #pv-cash .pv-rule {
+        border: none; border-top: 2px solid #2d5a27;
+        width: 340px; margin: 0 auto 36px;
+      }
+      #pv-cash .pv-row { margin-bottom: 22px; font-size: 14px; line-height: 1.5; }
+      #pv-cash .pv-row b { font-weight: 700; }
+      #pv-cash .pv-sig {
+        margin-top: 48px; font-size: 14px; line-height: 1.9;
+        color: #2d5a27; font-weight: 700;
+      }
+
+      /* ── Seller Finance layout ── */
+      body.pv-seller #pv-seller { display: block; }
+
+      #pv-seller .pv-logo { display: block; width: 180px; margin: 0 auto 20px; }
+      #pv-seller .pv-title {
+        text-align: center; font-size: 20px; font-weight: bold;
+        color: #1a2e1a; margin-bottom: 20px; letter-spacing: 0.02em;
+      }
+      #pv-seller hr { border: none; border-top: 1px solid #aaa; margin: 14px 0; }
+      #pv-seller .pv-meta { font-size: 13.5px; line-height: 2; margin-bottom: 4px; }
+      #pv-seller .pv-meta b { font-weight: 700; }
+      #pv-seller .pv-section-head {
+        font-size: 13px; font-weight: 700; text-decoration: underline;
+        margin: 4px 0 8px; display: block;
+      }
+      #pv-seller .pv-bullets { list-style: none; padding: 0; margin: 0; font-size: 13px; line-height: 2; }
+      #pv-seller .pv-bullets li::before { content: "• "; }
+      #pv-seller .pv-bullets li b { font-weight: 700; }
+      #pv-seller .pv-disclaimer {
+        font-size: 12px; font-style: italic; line-height: 1.8; color: #374151; margin-top: 4px;
+      }
+      #pv-seller .pv-sig {
+        margin-top: 28px; font-size: 13px; line-height: 1.9;
+        color: #2d5a27; font-weight: 700;
+      }
+
+      /* ── Take Over layout ── */
+      body.pv-takeover #pv-takeover { display: block; }
+
+      #pv-takeover .pv-logo { display: block; width: 180px; margin: 0 auto 20px; }
+      #pv-takeover .pv-title {
+        text-align: center; font-size: 20px; font-weight: bold;
+        color: #1a2e1a; margin-bottom: 20px; letter-spacing: 0.02em;
+      }
+      #pv-takeover hr { border: none; border-top: 1px solid #aaa; margin: 14px 0; }
+      #pv-takeover .pv-meta { font-size: 13.5px; line-height: 2; }
+      #pv-takeover .pv-meta b { font-weight: 700; }
+      #pv-takeover .pv-section-head {
+        font-size: 13px; font-weight: 700; text-decoration: underline;
+        margin: 4px 0 8px; display: block;
+      }
+      #pv-takeover .pv-bullets { list-style: none; padding: 0; font-size: 13px; line-height: 2; }
+      #pv-takeover .pv-bullets li::before { content: "• "; }
+      #pv-takeover .pv-bullets li b { font-weight: 700; }
+      #pv-takeover .pv-disclaimer {
+        font-size: 12px; font-style: italic; line-height: 1.8; color: #374151; margin-top: 4px;
+      }
+      #pv-takeover .pv-sig {
+        margin-top: 28px; font-size: 13px; line-height: 1.9;
+        color: #2d5a27; font-weight: 700;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <div class="header">
+    <img src="agp-logo.png" alt="All Group Properties" />
+    <nav class="tabs">
+      <button class="tab-btn active" id="tb-text"  onclick="showTab('text')">Text Generator</button>
+      <button class="tab-btn"        id="tb-loi"   onclick="showTab('loi')">LOI Generator</button>
+      <button class="tab-btn"        id="tb-crm"   onclick="showTab('crm')">Property CRM</button>
+    </nav>
+  </div>
+
+  <!-- ════════════════════════════════
+       TAB 1 — Text Generator
+       ════════════════════════════════ -->
+  <div id="tab-text" class="page">
+
+    <!-- Details card -->
+    <div class="card">
+      <div class="section-label">Property &amp; Agent Details</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Property Address</label>
+          <input type="text" id="t-address" placeholder="123 Main St" />
+        </div>
+      </div>
+      <div class="field-row" style="margin-top:14px">
+        <div class="field">
+          <label>Agent Name</label>
+          <input type="text" id="t-agent" placeholder="Josh Latham" />
+        </div>
+        <div class="field">
+          <label>Agent Phone</label>
+          <input type="text" id="t-phone" placeholder="(555) 123-4567" />
+        </div>
+      </div>
+      <!-- AI Key (collapsible) -->
+      <div style="margin-top:16px; border-top:1px solid #f1f5f9; padding-top:14px">
+        <div class="api-row">
+          <span style="font-size:12px;font-weight:600;color:#374151;">AI Grammar Polish</span>
+          <button class="api-toggle" onclick="toggleApiKey()">Enter API key ▾</button>
+        </div>
+        <div id="api-key-wrap" class="hidden" style="margin-top:10px">
+          <div class="field">
+            <label>Claude API Key <span style="font-weight:400;text-transform:none;letter-spacing:0">(stored locally)</span></label>
+            <input type="password" id="t-apikey" placeholder="sk-ant-..." oninput="saveApiKey(this.value)" />
+            <span class="api-hint">Get a free key at console.anthropic.com — only needed for AI polish. Without it the message still generates.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="t-gen-btn" onclick="generateText()">Generate Message</button>
+
+    <!-- Output card -->
+    <div class="card" style="margin-top:18px">
+      <div class="section-label">Generated Message</div>
+      <div class="output-box" id="t-output">
+        <span class="placeholder">Fill in the address above and click Generate Message.</span>
+      </div>
+      <div class="ai-status" id="t-ai-status"></div>
+      <div class="crm-notice hidden" id="t-crm-notice">✓ Added to your CRM</div>
+      <button class="btn-secondary" id="t-copy" onclick="copyText()" style="margin-top:10px;width:100%">Copy Message</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       TAB 2 — LOI Generator
+       ════════════════════════════════ -->
+  <div id="tab-loi" class="page hidden">
+
+    <!-- Deal type -->
+    <div class="card">
+      <div class="section-label">Deal Type</div>
+      <div class="type-grid">
+        <button class="type-btn" id="btn-cash"     onclick="selectType('cash')">
+          <span class="icon">💵</span> Cash Offer
+          <div class="desc">30-day close, as-is</div>
+        </button>
+        <button class="type-btn" id="btn-seller"   onclick="selectType('seller')">
+          <span class="icon">🤝</span> Seller Finance
+          <div class="desc">10% down, 40% monthly</div>
+        </button>
+        <button class="type-btn" id="btn-takeover" onclick="selectType('takeover')">
+          <span class="icon">🔑</span> Take Over
+          <div class="desc">Deed in lieu</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Fields -->
+    <div class="card">
+      <div class="section-label">Details</div>
+
+      <!-- Shared fields -->
+      <div class="field-row">
+        <div class="field">
+          <label>Street Address</label>
+          <input type="text" id="f-address" placeholder="123 Main St" oninput="clearLOI()" />
+        </div>
+        <div class="field">
+          <label>Agent / Seller Name</label>
+          <input type="text" id="f-agent" placeholder="Josh Latham" oninput="clearLOI()" />
+        </div>
+      </div>
+
+      <!-- Cash -->
+      <div id="cash-fields">
+        <div class="field-row">
+          <div class="field">
+            <label>Purchase Price</label>
+            <input type="text" id="f-cash-price" placeholder="$0" oninput="clearLOI()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Seller Finance -->
+      <div id="seller-fields" class="hidden">
+        <div class="field-row">
+          <div class="field">
+            <label>Purchase Price</label>
+            <input type="text" id="f-seller-price" placeholder="$0" oninput="clearLOI()" />
+          </div>
+          <div class="field">
+            <label>Monthly Rent <span class="badge">auto-calc 40%</span></label>
+            <input type="text" id="f-monthly-rent" placeholder="$0" oninput="clearLOI()" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Balloon Payment (years)</label>
+            <input type="text" id="f-balloon" placeholder="e.g. 6" oninput="clearLOI()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Take Over -->
+      <div id="takeover-fields" class="hidden">
+        <div class="field-row">
+          <div class="field">
+            <label>Purchase Price</label>
+            <input type="text" id="f-to-price" placeholder="$0" oninput="clearLOI()" />
+          </div>
+          <div class="field">
+            <label>Cash to Seller at Closing</label>
+            <input type="text" id="f-to-seller" placeholder="$0" oninput="clearLOI()" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Agent Commission</label>
+            <input type="text" id="f-to-commission" placeholder="$0" oninput="clearLOI()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="generateLOI()">Generate LOI</button>
+
+    <!-- LOI Preview -->
+    <div class="card" style="margin-top:18px" id="loi-output-card">
+      <div class="section-label">Preview</div>
+      <div class="output-box" id="loi-output" style="white-space:pre-wrap;font-family:'Georgia',serif;line-height:1.9">
+        <span class="placeholder">Select a deal type and fill in the details above.</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn-secondary" id="loi-copy-btn" onclick="copyLOI()">Copy LOI</button>
+        <button class="btn-secondary" id="loi-pdf-btn"  onclick="downloadPDF()">Download PDF</button>
+      </div>
+    </div>
+
+    <!-- Email Template -->
+    <div class="card" id="email-card" style="display:none">
+      <div class="section-label">Email to Send With PDF</div>
+      <div style="margin-bottom:8px">
+        <span style="font-size:12px;font-weight:600;color:#374151;">Subject:</span>
+        <span style="font-size:13px;color:#1a1a1a;margin-left:6px" id="email-subject"></span>
+      </div>
+      <div class="email-box" id="email-body"></div>
+      <button class="btn-secondary" id="email-copy-btn" onclick="copyEmail()" style="width:100%">Copy Email</button>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════
+       TAB 3 — Property CRM
+       ════════════════════════════════ -->
+  <div id="tab-crm" class="page hidden">
+    <div class="crm-header">
+      <h2>Property Tracker</h2>
+      <button class="btn-primary" style="width:auto;padding:10px 20px" onclick="addEntry()">+ Add Property</button>
+    </div>
+    <div id="crm-entries"></div>
+  </div>
+
+  <!-- ════════════════════════════════
+       PRINT VIEW (hidden on screen)
+       ════════════════════════════════ -->
+  <div id="print-view">
+
+    <!-- Cash LOI -->
+    <div class="pv" id="pv-cash">
+      <img class="pv-logo" src="agp-logo.png" alt="All Group Properties" />
+      <div class="pv-title">LETTER OF INTENT</div>
+      <div class="pv-address" id="pc-address"></div>
+      <hr class="pv-rule" />
+      <div class="pv-row"><b>Purchase Price:</b> <span id="pc-price"></span> Cash</div>
+      <div class="pv-row"><b>Earnest Money Deposit:</b> $1,000</div>
+      <div class="pv-row"><b>EMD Due:</b> Post Inspection Period</div>
+      <div class="pv-row"><b>Inspection Period:</b> 10 Business Day Inspection Period</div>
+      <div class="pv-row"><b>Closing Timeline:</b> 30 Day Closing</div>
+      <div class="pv-row"><b>Property Condition:</b> Property to be sold as-is</div>
+      <div class="pv-sig">
+        Ayden Permel<br/>
+        All Group Properties LLC<br/>
+        757-778-0312
+      </div>
+    </div>
+
+    <!-- Seller Finance LOI -->
+    <div class="pv" id="pv-seller">
+      <img class="pv-logo" src="agp-logo.png" alt="All Group Properties" />
+      <div class="pv-title">LETTER OF INTENT (LOI)</div>
+      <hr />
+      <div class="pv-meta"><b>Date:</b> <span id="ps-date"></span></div>
+      <div class="pv-meta"><b>To:</b> <span id="ps-agent"></span></div>
+      <div class="pv-meta"><b>Property Address:</b> <span id="ps-address"></span></div>
+      <hr />
+      <span class="pv-section-head">OFFER SUMMARY</span>
+      <ul class="pv-bullets">
+        <li><b>Purchase Price:</b> <span id="ps-price"></span></li>
+        <li><b>Earnest Money Deposit:</b> $1,000 <em>(held with title company)</em></li>
+        <li><b>Inspection Period:</b> 10 business days</li>
+        <li><b>Closing Timeline:</b> 30 days or sooner</li>
+      </ul>
+      <hr />
+      <span class="pv-section-head">Terms (if applicable)</span>
+      <ul class="pv-bullets">
+        <li><b>Down Payment:</b> <span id="ps-down"></span></li>
+        <li><b>Monthly Payment:</b> <span id="ps-monthly"></span></li>
+        <li><b>Balloon Payment:</b> <em>Due in <span id="ps-balloon"></span> years</em></li>
+      </ul>
+      <hr />
+      <span class="pv-section-head">Additional Terms</span>
+      <ul class="pv-bullets">
+        <li>Buyer to pay all standard closing costs</li>
+        <li>Property to be delivered vacant at closing <em>(unless otherwise agreed)</em></li>
+        <li><em>Offer is subject to inspection and clear title</em></li>
+      </ul>
+      <hr />
+      <span class="pv-section-head">Proof of Funds</span>
+      <div style="font-size:13px;font-style:italic;line-height:1.8">Available upon request</div>
+      <hr />
+      <div class="pv-disclaimer">This Letter of Intent is non-binding and intended solely to outline the general terms of the proposed transaction. A formal Purchase and Sale Agreement will follow upon mutual agreement.</div>
+      <div class="pv-sig">
+        Ayden Permel<br/>
+        All Group Properties LLC<br/>
+        757-778-0312
+      </div>
+    </div>
+
+    <!-- Take Over LOI -->
+    <div class="pv" id="pv-takeover">
+      <img class="pv-logo" src="agp-logo.png" alt="All Group Properties" />
+      <div class="pv-title">LETTER OF INTENT (LOI)</div>
+      <hr />
+      <div class="pv-meta"><b>Date:</b> <span id="pt-date"></span></div>
+      <div class="pv-meta"><b>To:</b> <span id="pt-agent"></span></div>
+      <div class="pv-meta"><b>Property Address:</b> <span id="pt-address"></span></div>
+      <hr />
+      <span class="pv-section-head">OFFER SUMMARY</span>
+      <ul class="pv-bullets">
+        <li><b>Purchase Price:</b> <span id="pt-price"></span></li>
+        <li><b>Cash to Seller at Closing:</b> <span id="pt-seller"></span></li>
+        <li><b>Agent Commission:</b> <span id="pt-commission"></span></li>
+        <li><b>Inspection Period:</b> 10 business days</li>
+      </ul>
+      <hr />
+      <span class="pv-section-head">Additional Terms</span>
+      <ul class="pv-bullets">
+        <li>Seller to convey title via Deed in Lieu of Foreclosure</li>
+        <li>Buyer to pay all standard closing costs</li>
+        <li>Property to be delivered vacant at closing <em>(unless otherwise agreed)</em></li>
+        <li><em>Offer is subject to inspection and clear title</em></li>
+      </ul>
+      <hr />
+      <span class="pv-section-head">Proof of Funds</span>
+      <div style="font-size:13px;font-style:italic;line-height:1.8">Available upon request</div>
+      <hr />
+      <div class="pv-disclaimer">This Letter of Intent is non-binding and intended solely to outline the general terms of the proposed transaction. A formal Purchase and Sale Agreement will follow upon mutual agreement.</div>
+      <div class="pv-sig">
+        Ayden Permel<br/>
+        All Group Properties LLC<br/>
+        757-778-0312
+      </div>
+    </div>
+
+  </div><!-- /print-view -->
+
+  <script>
+    /* ── Tab switching ── */
+    function showTab(t) {
+      ["text","loi","crm"].forEach(id => {
+        document.getElementById("tab-"+id).classList.toggle("hidden", id !== t);
+        document.getElementById("tb-"+id).classList.toggle("active", id === t);
+      });
+    }
+
+    /* ════════ TEXT GENERATOR ════════ */
+    function toggleApiKey() {
+      const wrap = document.getElementById("api-key-wrap");
+      const btn  = document.querySelector(".api-toggle");
+      const open = wrap.classList.toggle("hidden");
+      btn.textContent = open ? "Enter API key ▾" : "Hide ▴";
+    }
+
+    function saveApiKey(val) {
+      localStorage.setItem("agp_claude_key", val.trim());
+    }
+
+    function parseStreetAddress(full) {
+      // Strip city, state, zip — keep only the part before the first comma
+      // e.g. "123 Main St, Chicago, IL 60601" → "123 Main St"
+      return full.split(",")[0].trim();
+    }
+
+    async function generateText() {
+      const fullAddr = document.getElementById("t-address").value.trim();
+      const agent    = document.getElementById("t-agent").value.trim();
+      const phone    = document.getElementById("t-phone").value.trim();
+      if (!fullAddr) { alert("Please enter a property address."); return; }
+
+      const streetAddr = parseStreetAddress(fullAddr);
+      const greeting   = agent ? `Hey ${agent},` : "Hey,";
+      const rawMsg     = `${greeting} my name is Ayden. I'm interested in ${streetAddr}. Before I send an offer over, can you tell me about the condition of the roof, HVAC, plumbing, and foundation?`;
+
+      const out    = document.getElementById("t-output");
+      const btn    = document.getElementById("t-gen-btn");
+      const status = document.getElementById("t-ai-status");
+
+      // Show message immediately
+      out.textContent = rawMsg;
+      status.textContent = "";
+      resetBtn("t-copy", "Copy Message");
+
+      // Try AI polish
+      const apiKey = (localStorage.getItem("agp_claude_key") || "").trim()
+                  || document.getElementById("t-apikey").value.trim();
+
+      if (apiKey) {
+        btn.disabled = true;
+        btn.textContent = "Polishing...";
+        status.textContent = "AI is checking grammar...";
+        try {
+          const res = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": apiKey,
+              "anthropic-version": "2023-06-01",
+              "anthropic-dangerous-client-side-request-allowed": "true"
+            },
+            body: JSON.stringify({
+              model: "claude-haiku-4-5-20251001",
+              max_tokens: 200,
+              messages: [{
+                role: "user",
+                content: `Fix any grammar or punctuation issues in this text message to a real estate agent. Keep it casual and conversational — do not make it formal. Only return the corrected message, no quotes, no explanation:\n\n${rawMsg}`
+              }]
+            })
+          });
+          const data = await res.json();
+          if (data.content?.[0]?.text) {
+            out.textContent = data.content[0].text.trim();
+            status.textContent = "Checked by AI";
+          } else {
+            status.textContent = "AI check failed — showing original.";
+          }
+        } catch {
+          status.textContent = "Could not reach AI — showing original.";
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Generate Message";
+        }
+      }
+
+      // Auto-add to CRM using the full address
+      autoAddToCRM(fullAddr, agent, phone);
+      const notice = document.getElementById("t-crm-notice");
+      notice.classList.remove("hidden");
+      setTimeout(() => notice.classList.add("hidden"), 3500);
+    }
+
+    function autoAddToCRM(address, agent, phone) {
+      const entries = crmLoad();
+      const date = new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+      const lines = [];
+      if (agent) lines.push(`Agent: ${agent}`);
+      if (phone) lines.push(`Phone: ${phone}`);
+      lines.push(`Texted: ${date}`);
+      entries.unshift({ address, notes: lines.join("\n") });
+      crmSave(entries);
+    }
+
+    function copyText() {
+      const text = document.getElementById("t-output").textContent;
+      if (!text || text.includes("Fill in the address")) return;
+      navigator.clipboard.writeText(text).then(() => flashBtn("t-copy","Copied!","Copy Message"));
+    }
+
+    /* ════════ LOI GENERATOR ════════ */
+    let loiType = null;
+    let loiData = null;
+
+    function selectType(t) {
+      loiType = t;
+      ["cash","seller","takeover"].forEach(id => {
+        document.getElementById("btn-"+id).classList.toggle("active", id === t);
+        document.getElementById(id+"-fields").classList.toggle("hidden", id !== t);
+      });
+      clearLOI();
+    }
+
+    function clearLOI() {
+      loiData = null;
+      document.getElementById("loi-output").innerHTML = '<span class="placeholder">Select a deal type and fill in the details above.</span>';
+      document.getElementById("email-card").style.display = "none";
+      resetBtn("loi-copy-btn","Copy LOI");
+      resetBtn("loi-pdf-btn","Download PDF");
+    }
+
+    function fmt(v) {
+      const n = parseFloat(String(v).replace(/[$,]/g,""));
+      return isNaN(n) ? v : "$"+n.toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:2});
+    }
+
+    function todayStr() {
+      return new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+    }
+
+    function generateLOI() {
+      if (!loiType) { alert("Please select a deal type."); return; }
+      const address = document.getElementById("f-address").value.trim();
+      const agent   = document.getElementById("f-agent").value.trim();
+      if (!address) { alert("Please enter a property address."); return; }
+
+      let preview = "";
+
+      if (loiType === "cash") {
+        const price = document.getElementById("f-cash-price").value.trim();
+        if (!price) { alert("Please enter a purchase price."); return; }
+        loiData = { type:"cash", address, agent, price };
+        preview =
+`LETTER OF INTENT
+
+${address}
+
+Purchase Price: ${fmt(price)} Cash
+Earnest Money Deposit: $1,000
+EMD Due: Post Inspection Period
+Inspection Period: 10 Business Day Inspection Period
+Closing Timeline: 30 Day Closing
+Property Condition: Property to be sold as-is
+
+Ayden Permel
+All Group Properties LLC
+757-778-0312`;
+      }
+
+      else if (loiType === "seller") {
+        const price   = document.getElementById("f-seller-price").value.trim();
+        const rent    = document.getElementById("f-monthly-rent").value.trim();
+        const balloon = document.getElementById("f-balloon").value.trim();
+        if (!price || !rent || !balloon) { alert("Please fill in all Seller Finance fields."); return; }
+        const down    = fmt(String(parseFloat(price.replace(/[$,]/g,"")) * 0.10));
+        const monthly = fmt(String(parseFloat(rent.replace(/[$,]/g,""))  * 0.40));
+        loiData = { type:"seller", address, agent, price:fmt(price), down, monthly, balloon };
+        preview =
+`LETTER OF INTENT (LOI)
+
+Date: ${todayStr()}
+To: ${agent || "—"}
+Property Address: ${address}
+
+OFFER SUMMARY
+• Purchase Price: ${fmt(price)}
+• Earnest Money Deposit: $1,000 (held with title company)
+• Inspection Period: 10 business days
+• Closing Timeline: 30 days or sooner
+
+Terms (if applicable)
+• Down Payment: ${down}
+• Monthly Payment: ${monthly}/month
+• Balloon Payment: Due in ${balloon} years
+
+Additional Terms
+• Buyer to pay all standard closing costs
+• Property to be delivered vacant at closing (unless otherwise agreed)
+• Offer is subject to inspection and clear title
+
+Proof of Funds
+Available upon request
+
+This Letter of Intent is non-binding and intended solely to outline the general terms of the proposed transaction. A formal Purchase and Sale Agreement will follow upon mutual agreement.
+
+Ayden Permel
+All Group Properties LLC
+757-778-0312`;
+      }
+
+      else if (loiType === "takeover") {
+        const price      = document.getElementById("f-to-price").value.trim();
+        const toSeller   = document.getElementById("f-to-seller").value.trim();
+        const commission = document.getElementById("f-to-commission").value.trim();
+        if (!price || !toSeller || !commission) { alert("Please fill in all Take Over fields."); return; }
+        loiData = { type:"takeover", address, agent, price:fmt(price), toSeller:fmt(toSeller), commission:fmt(commission) };
+        preview =
+`LETTER OF INTENT (LOI)
+
+Date: ${todayStr()}
+To: ${agent || "—"}
+Property Address: ${address}
+
+OFFER SUMMARY
+• Purchase Price: ${fmt(price)}
+• Cash to Seller at Closing: ${fmt(toSeller)}
+• Agent Commission: ${fmt(commission)}
+• Inspection Period: 10 business days
+
+Additional Terms
+• Seller to convey title via Deed in Lieu of Foreclosure
+• Buyer to pay all standard closing costs
+• Property to be delivered vacant at closing (unless otherwise agreed)
+• Offer is subject to inspection and clear title
+
+Proof of Funds
+Available upon request
+
+This Letter of Intent is non-binding and intended solely to outline the general terms of the proposed transaction. A formal Purchase and Sale Agreement will follow upon mutual agreement.
+
+Ayden Permel
+All Group Properties LLC
+757-778-0312`;
+      }
+
+      document.getElementById("loi-output").textContent = preview;
+      buildEmail();
+    }
+
+    function buildEmail() {
+      if (!loiData) return;
+      const { address, agent } = loiData;
+      const greeting = agent ? `Hi ${agent},` : "Hi,";
+      const subject  = `Letter of Intent – ${address}`;
+      const body =
+`${greeting}
+
+Please find attached my Letter of Intent for the property located at ${address}. I am interested in moving forward and would love to connect to discuss the details further.
+
+Please don't hesitate to reach out with any questions.
+
+Best regards,
+Ayden Permel
+All Group Properties LLC
+(757) 778-0312
+Allgroupproperties@gmail.com`;
+
+      document.getElementById("email-subject").textContent = subject;
+      document.getElementById("email-body").textContent = body;
+      document.getElementById("email-card").style.display = "block";
+      resetBtn("email-copy-btn","Copy Email");
+    }
+
+    function copyLOI() {
+      const text = document.getElementById("loi-output").textContent;
+      if (!loiData) return;
+      navigator.clipboard.writeText(text).then(() => flashBtn("loi-copy-btn","Copied!","Copy LOI"));
+    }
+
+    function copyEmail() {
+      const body = document.getElementById("email-body").textContent;
+      navigator.clipboard.writeText(body).then(() => flashBtn("email-copy-btn","Copied!","Copy Email"));
+    }
+
+    function downloadPDF() {
+      if (!loiData) { alert("Generate an LOI first."); return; }
+      const d = loiData;
+
+      if (d.type === "cash") {
+        document.getElementById("pc-address").textContent = d.address;
+        document.getElementById("pc-price").textContent   = d.price;
+        document.body.className = "pv-cash";
+      }
+      else if (d.type === "seller") {
+        document.getElementById("ps-date").textContent    = todayStr();
+        document.getElementById("ps-agent").textContent   = d.agent || "—";
+        document.getElementById("ps-address").textContent = d.address;
+        document.getElementById("ps-price").textContent   = d.price;
+        document.getElementById("ps-down").textContent    = d.down;
+        document.getElementById("ps-monthly").textContent = d.monthly + "/month";
+        document.getElementById("ps-balloon").textContent = d.balloon;
+        document.body.className = "pv-seller";
+      }
+      else if (d.type === "takeover") {
+        document.getElementById("pt-date").textContent       = todayStr();
+        document.getElementById("pt-agent").textContent      = d.agent || "—";
+        document.getElementById("pt-address").textContent    = d.address;
+        document.getElementById("pt-price").textContent      = d.price;
+        document.getElementById("pt-seller").textContent     = d.toSeller;
+        document.getElementById("pt-commission").textContent = d.commission;
+        document.body.className = "pv-takeover";
+      }
+
+      window.print();
+      setTimeout(() => { document.body.className = ""; }, 300);
+    }
+
+    /* ════════ CRM ════════ */
+    const CRM_KEY = "agp_crm";
+
+    function crmLoad() {
+      try { return JSON.parse(localStorage.getItem(CRM_KEY)) || []; }
+      catch { return []; }
+    }
+    function crmSave(e) { localStorage.setItem(CRM_KEY, JSON.stringify(e)); }
+
+    function renderCRM() {
+      const entries = crmLoad();
+      const wrap = document.getElementById("crm-entries");
+      if (!entries.length) {
+        wrap.innerHTML = '<div class="crm-empty">No properties yet. Click "+ Add Property" to get started.</div>';
+        return;
+      }
+      wrap.innerHTML = entries.map((e,i) => `
+        <div class="entry">
+          <div class="entry-addr">
+            <label>Address</label>
+            <input type="text" value="${escH(e.address)}" placeholder="123 Main St"
+              oninput="crmUpdate(${i},'address',this.value)" />
+          </div>
+          <div class="entry-notes">
+            <label>Progress / Notes</label>
+            <textarea placeholder="Where are you at with this property..."
+              oninput="crmUpdate(${i},'notes',this.value)">${escH(e.notes)}</textarea>
+          </div>
+          <button class="del-btn" onclick="crmDelete(${i})" title="Remove">✕</button>
+        </div>`).join("");
+    }
+
+    function escH(s) {
+      return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    function addEntry() {
+      const e = crmLoad(); e.push({address:"",notes:""}); crmSave(e); renderCRM();
+      const inputs = document.querySelectorAll(".entry-addr input");
+      if (inputs.length) inputs[inputs.length-1].focus();
+    }
+
+    function crmUpdate(i,field,val) {
+      const e = crmLoad(); if (e[i]) { e[i][field]=val; crmSave(e); }
+    }
+
+    function crmDelete(i) {
+      const e = crmLoad(); e.splice(i,1); crmSave(e); renderCRM();
+    }
+
+    /* ════════ Helpers ════════ */
+    function flashBtn(id, on, off) {
+      const b = document.getElementById(id);
+      b.textContent = on; b.classList.add("success");
+      setTimeout(() => { b.textContent = off; b.classList.remove("success"); }, 2000);
+    }
+    function resetBtn(id, label) {
+      const b = document.getElementById(id);
+      if (b) { b.textContent = label; b.classList.remove("success"); }
+    }
+
+    /* ── Init ── */
+    selectType("cash");
+    renderCRM();
+    // Restore saved API key
+    const _k = localStorage.getItem("agp_claude_key");
+    if (_k) document.getElementById("t-apikey").value = _k;
+
+    // Register service worker for PWA / offline support
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js");
+    }
+  </script>
+</body>
+</html>

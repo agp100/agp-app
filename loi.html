@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LOI Generator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      padding: 32px 24px;
+    }
+
+    .container { max-width: 780px; margin: 0 auto; }
+
+    .logo-wrap { margin-bottom: 16px; }
+    .logo-wrap img { width: 140px; display: block; }
+
+    h1 { font-size: 24px; color: #1a1a1a; margin-bottom: 4px; }
+    .subtitle { font-size: 13px; color: #6b7280; margin-bottom: 28px; }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .type-btn {
+      padding: 14px 10px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      background: white;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .type-btn:hover { border-color: #93c5fd; background: #eff6ff; }
+    .type-btn.active { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
+    .type-btn .icon { font-size: 22px; display: block; margin-bottom: 6px; }
+    .type-btn .desc { font-size: 11px; font-weight: 400; color: #6b7280; margin-top: 3px; }
+
+    .fields { display: flex; flex-direction: column; gap: 14px; }
+    .field-row { display: flex; gap: 14px; }
+    .field { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+
+    label { font-size: 12px; font-weight: 600; color: #374151; }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 500;
+      color: #6b7280;
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+
+    input {
+      padding: 10px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 9px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      color: #1a1a1a;
+      width: 100%;
+    }
+
+    input:focus { border-color: #3b82f6; }
+    .hidden { display: none; }
+
+    .output-area {
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 20px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: #1a1a1a;
+      white-space: pre-wrap;
+      font-family: "Georgia", serif;
+      min-height: 120px;
+    }
+
+    .output-area .placeholder {
+      color: #9ca3af;
+      font-style: italic;
+      font-family: -apple-system, sans-serif;
+      font-size: 14px;
+    }
+
+    .btn-row { display: flex; gap: 10px; margin-top: 4px; }
+
+    button.generate-btn {
+      flex: 1;
+      padding: 13px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button.generate-btn:hover { background: #2563eb; }
+
+    button.action-btn {
+      flex: 1;
+      padding: 12px;
+      background: white;
+      color: #374151;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 10px;
+    }
+
+    button.action-btn:hover { border-color: #93c5fd; background: #eff6ff; color: #1d4ed8; }
+    button.action-btn.success { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
+    button.action-btn.pdf-btn:hover { border-color: #6ee7b7; background: #f0fdf4; color: #15803d; }
+
+    /* ── Print / PDF layout ── */
+    #print-view { display: none; }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .container { display: none; }
+
+      #print-view {
+        display: block;
+        padding: 52px 64px;
+        font-family: "Georgia", "Times New Roman", serif;
+        color: #1a1a1a;
+        max-width: 100%;
+      }
+
+      #print-view .pv-logo {
+        display: block;
+        width: 160px;
+        margin: 0 auto 20px;
+      }
+
+      #print-view .pv-rule-top {
+        border: none;
+        border-top: 3px solid #2d5a27;
+        margin-bottom: 28px;
+      }
+
+      #print-view .pv-title {
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+        letter-spacing: 0.07em;
+        margin-bottom: 28px;
+        font-family: "Georgia", serif;
+      }
+
+      #print-view .pv-body {
+        font-size: 13px;
+        line-height: 2;
+        white-space: pre-wrap;
+      }
+
+      #print-view .pv-rule-bottom {
+        border: none;
+        border-top: 1.5px solid #2d5a27;
+        margin-top: 48px;
+        margin-bottom: 16px;
+      }
+
+      #print-view .pv-footer {
+        font-size: 12px;
+        line-height: 1.9;
+        color: #374151;
+        font-family: "Georgia", serif;
+      }
+
+      #print-view .pv-footer strong {
+        font-size: 13px;
+        color: #1a1a1a;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main UI -->
+  <div class="container">
+    <div class="logo-wrap">
+      <img src="agp-logo.png" alt="All Group Properties" />
+    </div>
+    <h1>LOI Generator</h1>
+    <p class="subtitle">Select a deal type, fill in the details, and generate your Letter of Intent.</p>
+
+    <div class="card">
+      <div class="section-title">Deal Type</div>
+      <div class="type-grid">
+        <button class="type-btn" id="btn-cash" onclick="selectType('cash')">
+          <span class="icon">💵</span>
+          Cash Offer
+          <div class="desc">30-day close, as-is</div>
+        </button>
+        <button class="type-btn" id="btn-seller" onclick="selectType('seller')">
+          <span class="icon">🤝</span>
+          Seller Finance
+          <div class="desc">10% down, 40% monthly</div>
+        </button>
+        <button class="type-btn" id="btn-takeover" onclick="selectType('takeover')">
+          <span class="icon">🔑</span>
+          Take Over
+          <div class="desc">Deed in lieu</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Property Details</div>
+      <div class="fields">
+
+        <div class="field">
+          <label>Street Address</label>
+          <input type="text" id="f-address" placeholder="123 Main St" oninput="clearOutput()" />
+        </div>
+
+        <div class="field-row" id="cash-fields">
+          <div class="field">
+            <label>Purchase Price</label>
+            <input type="text" id="f-cash-price" placeholder="$0" oninput="clearOutput()" />
+          </div>
+        </div>
+
+        <div class="field-row hidden" id="seller-fields">
+          <div class="field">
+            <label>Purchase Price</label>
+            <input type="text" id="f-seller-price" placeholder="$0" oninput="clearOutput()" />
+          </div>
+          <div class="field">
+            <label>Monthly Rent <span class="badge">auto-calculates 40%</span></label>
+            <input type="text" id="f-monthly-rent" placeholder="$0" oninput="clearOutput()" />
+          </div>
+        </div>
+
+        <div id="takeover-fields" class="hidden">
+          <div class="field-row" style="margin-bottom:14px">
+            <div class="field">
+              <label>Purchase Price</label>
+              <input type="text" id="f-to-price" placeholder="$0" oninput="clearOutput()" />
+            </div>
+            <div class="field">
+              <label>Cash to Seller at Closing</label>
+              <input type="text" id="f-to-seller" placeholder="$0" oninput="clearOutput()" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Agent Commission</label>
+              <input type="text" id="f-to-commission" placeholder="$0" oninput="clearOutput()" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="generate-btn" onclick="generate()">Generate LOI</button>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="section-title">Letter of Intent</div>
+      <div class="output-area" id="output">
+        <span class="placeholder">Select a deal type and fill in the details above, then click Generate LOI.</span>
+      </div>
+      <div style="display:flex; gap:10px">
+        <button class="action-btn" id="copy-btn" onclick="copyLOI()">Copy LOI</button>
+        <button class="action-btn pdf-btn" id="pdf-btn" onclick="downloadPDF()">Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print-only LOI layout -->
+  <div id="print-view">
+    <img class="pv-logo" src="agp-logo.png" alt="All Group Properties" />
+    <hr class="pv-rule-top" />
+    <div class="pv-title" id="print-title"></div>
+    <div class="pv-body" id="print-body"></div>
+    <hr class="pv-rule-bottom" />
+    <div class="pv-footer">
+      <strong>Ayden Permel</strong> &nbsp;&bull;&nbsp; All Group Properties<br/>
+      Allgroupproperties@gmail.com &nbsp;&bull;&nbsp; (757) 778-0312
+    </div>
+  </div>
+
+  <script>
+    let currentType = null;
+    let currentLOI = null;
+
+    function selectType(type) {
+      currentType = type;
+      document.querySelectorAll(".type-btn").forEach(b => b.classList.remove("active"));
+      document.getElementById("btn-" + type).classList.add("active");
+      document.getElementById("cash-fields").classList.add("hidden");
+      document.getElementById("seller-fields").classList.add("hidden");
+      document.getElementById("takeover-fields").classList.add("hidden");
+      if (type === "cash") document.getElementById("cash-fields").classList.remove("hidden");
+      if (type === "seller") document.getElementById("seller-fields").classList.remove("hidden");
+      if (type === "takeover") document.getElementById("takeover-fields").classList.remove("hidden");
+      clearOutput();
+    }
+
+    function clearOutput() {
+      currentLOI = null;
+      document.getElementById("output").innerHTML = '<span class="placeholder">Select a deal type and fill in the details above, then click Generate LOI.</span>';
+      resetBtn("copy-btn", "Copy LOI");
+      resetBtn("pdf-btn", "Download PDF");
+    }
+
+    function resetBtn(id, label) {
+      const btn = document.getElementById(id);
+      btn.textContent = label;
+      btn.classList.remove("success");
+    }
+
+    function fmt(val) {
+      const n = parseFloat(String(val).replace(/[$,]/g, ""));
+      if (isNaN(n)) return val;
+      return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    function today() {
+      return new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    }
+
+    function generate() {
+      if (!currentType) { alert("Please select a deal type first."); return; }
+      const address = document.getElementById("f-address").value.trim();
+      if (!address) { alert("Please enter a property address."); return; }
+
+      let title = "";
+      let pdfBody = "";
+
+      if (currentType === "cash") {
+        const price = document.getElementById("f-cash-price").value.trim();
+        if (!price) { alert("Please enter a purchase price."); return; }
+
+        title = "LETTER OF INTENT TO PURCHASE";
+        pdfBody =
+`Date: ${today()}
+Property Address: ${address}
+
+To Whom It May Concern,
+
+I, Ayden Permel, hereby submit this Letter of Intent to purchase the above-referenced property under the following terms and conditions:
+
+Purchase Price: ${fmt(price)}
+
+Earnest Money Deposit (EMD): $1,000, due upon expiration of the inspection period
+
+Inspection Period: 10 business days from the date of an accepted agreement
+
+Closing: 30 days from the expiration of the inspection period
+
+Condition: Property to be purchased as-is. Buyer accepts the property in its current condition with no repairs or credits requested.
+
+This Letter of Intent is non-binding and is intended solely to outline the general terms and conditions for a future Purchase and Sale Agreement. Neither party shall have any legal obligation until a fully executed Purchase and Sale Agreement has been signed by all parties.
+
+Sincerely,
+
+Ayden Permel`;
+      }
+
+      else if (currentType === "seller") {
+        const price = document.getElementById("f-seller-price").value.trim();
+        const rent = document.getElementById("f-monthly-rent").value.trim();
+        if (!price || !rent) { alert("Please enter both a purchase price and monthly rent."); return; }
+
+        const priceNum = parseFloat(price.replace(/[$,]/g, ""));
+        const rentNum  = parseFloat(rent.replace(/[$,]/g, ""));
+        const down    = isNaN(priceNum) ? "10% of Purchase Price" : fmt(String(priceNum * 0.10));
+        const monthly = isNaN(rentNum)  ? "40% of Monthly Rent"   : fmt(String(rentNum  * 0.40));
+
+        title = "LETTER OF INTENT TO PURCHASE — SELLER FINANCING";
+        pdfBody =
+`Date: ${today()}
+Property Address: ${address}
+
+To Whom It May Concern,
+
+I, Ayden Permel, hereby submit this Letter of Intent to purchase the above-referenced property under the following seller-financed terms and conditions:
+
+Purchase Price: ${fmt(price)}
+
+Down Payment: ${down} (10% of Purchase Price)
+
+Monthly Payment to Seller: ${monthly}/month (40% of monthly rental income of ${fmt(rent)}/month)
+
+Earnest Money Deposit (EMD): $1,000, due upon expiration of the inspection period
+
+Inspection Period: 10 business days from the date of an accepted agreement
+
+This Letter of Intent is non-binding and is intended solely to outline the general terms and conditions for a future Purchase and Sale Agreement. Neither party shall have any legal obligation until a fully executed Purchase and Sale Agreement has been signed by all parties.
+
+Sincerely,
+
+Ayden Permel`;
+      }
+
+      else if (currentType === "takeover") {
+        const price      = document.getElementById("f-to-price").value.trim();
+        const toSeller   = document.getElementById("f-to-seller").value.trim();
+        const commission = document.getElementById("f-to-commission").value.trim();
+        if (!price || !toSeller || !commission) { alert("Please fill in all Take Over fields."); return; }
+
+        title = "LETTER OF INTENT — DEED IN LIEU / SUBJECT-TO ACQUISITION";
+        pdfBody =
+`Date: ${today()}
+Property Address: ${address}
+
+To Whom It May Concern,
+
+I, Ayden Permel, hereby submit this Letter of Intent to acquire the above-referenced property under the following terms and conditions:
+
+Purchase Price: ${fmt(price)}
+
+Cash to Seller at Closing: ${fmt(toSeller)}
+
+Agent Commission: Buyer agrees to pay agent commission of ${fmt(commission)}
+
+Transfer of Title: Seller agrees to convey title to Buyer via Deed in Lieu of Foreclosure. Seller shall cooperate fully in the execution of all documents necessary to complete this transfer.
+
+Inspection Period: 10 business days from the date of an accepted agreement
+
+This Letter of Intent is non-binding and is intended solely to outline the general terms and conditions for a future Purchase and Sale Agreement. Neither party shall have any legal obligation until a fully executed Purchase and Sale Agreement has been signed by all parties.
+
+Sincerely,
+
+Ayden Permel`;
+      }
+
+      currentLOI = { title, pdfBody };
+      document.getElementById("output").textContent = title + "\n\n" + pdfBody;
+    }
+
+    function copyLOI() {
+      if (!currentLOI) { alert("Generate an LOI first."); return; }
+      navigator.clipboard.writeText(currentLOI.title + "\n\n" + currentLOI.pdfBody).then(() => {
+        const btn = document.getElementById("copy-btn");
+        btn.textContent = "Copied!";
+        btn.classList.add("success");
+        setTimeout(() => resetBtn("copy-btn", "Copy LOI"), 2000);
+      });
+    }
+
+    function downloadPDF() {
+      if (!currentLOI) { alert("Generate an LOI first."); return; }
+      document.getElementById("print-title").textContent = currentLOI.title;
+      document.getElementById("print-body").textContent = currentLOI.pdfBody;
+      window.print();
+    }
+  </script>
+</body>
+</html>
