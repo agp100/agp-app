@@ -304,8 +304,9 @@
       <div class="section-label">Property &amp; Agent Details</div>
       <div class="field-row">
         <div class="field">
-          <label>Property Address</label>
-          <input type="text" id="t-address" placeholder="123 Main St" />
+          <label>Zillow Link or Address</label>
+          <input type="text" id="t-address" placeholder="Paste Zillow link or type address" oninput="handleAddressInput(this.value)" />
+          <span id="zillow-status" style="font-size:11px;min-height:16px;display:block;margin-top:3px"></span>
         </div>
       </div>
       <div class="field-row" style="margin-top:14px">
@@ -603,9 +604,68 @@
     }
 
     function parseStreetAddress(full) {
-      // Strip city, state, zip — keep only the part before the first comma
-      // e.g. "123 Main St, Chicago, IL 60601" → "123 Main St"
       return full.split(",")[0].trim();
+    }
+
+    function parseZillowUrl(url) {
+      // Extract slug from /homedetails/slug/
+      const m = url.match(/\/homedetails\/([^\/]+)/);
+      if (!m) return null;
+
+      // Slug looks like: 123-Main-St-Chicago-IL-60601 (all lowercase, hyphens)
+      const slug = m[1].replace(/_\d+_zpid$/, "").replace(/-/g, " ");
+
+      // Match trailing state (2 letters) + zip (5 digits)
+      const addrMatch = slug.match(/^(.+?)\s+([a-z]{2})\s+(\d{5})$/);
+      if (!addrMatch) return null;
+
+      const streetAndCity = addrMatch[1];
+      const state = addrMatch[2].toUpperCase();
+      const zip   = addrMatch[3];
+
+      // Split street from city using common street suffixes
+      const suffixRe = /\b(st|ave|rd|blvd|dr|ln|ct|way|pl|cir|ter|hwy|pkwy|sq|loop|run|trl|pike|fwy|apt|unit|ste|#\d+)\b/gi;
+      let lastIdx = -1, match;
+      while ((match = suffixRe.exec(streetAndCity)) !== null) lastIdx = match.index + match[0].length;
+
+      const tc = s => s.replace(/\b\w/g, c => c.toUpperCase());
+      let street, city;
+      if (lastIdx > 0) {
+        street = tc(streetAndCity.slice(0, lastIdx).trim());
+        city   = tc(streetAndCity.slice(lastIdx).trim());
+      } else {
+        // Fallback: last word is city
+        const words = streetAndCity.split(" ");
+        city   = tc(words.pop());
+        street = tc(words.join(" "));
+      }
+
+      return {
+        street,
+        full: `${street}, ${city}, ${state} ${zip}`
+      };
+    }
+
+    let _parsedFromZillow = null;  // holds last Zillow parse result
+
+    function handleAddressInput(val) {
+      const status = document.getElementById("zillow-status");
+      if (val.includes("zillow.com")) {
+        const parsed = parseZillowUrl(val);
+        if (parsed) {
+          _parsedFromZillow = parsed;
+          document.getElementById("t-address").value = parsed.full;
+          status.style.color = "#16a34a";
+          status.textContent = "✓ Address parsed from Zillow";
+        } else {
+          _parsedFromZillow = null;
+          status.style.color = "#ef4444";
+          status.textContent = "Couldn't parse — try copying the full Zillow URL";
+        }
+      } else {
+        _parsedFromZillow = null;
+        status.textContent = "";
+      }
     }
 
     async function generateText() {
