@@ -135,22 +135,79 @@
     /* ── CRM ── */
     .crm-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     .crm-header h2 { font-size: 18px; color: #1a1a1a; }
+    .crm-empty { text-align: center; color: #9ca3af; padding: 50px 0; font-size: 15px; }
+
     .entry {
-      background: white; border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-      padding: 16px 18px; display: flex; gap: 14px; align-items: flex-start;
-      margin-bottom: 12px;
+      background: white; border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      margin-bottom: 16px; overflow: hidden;
+      display: flex; flex-direction: row; align-items: stretch;
     }
-    .entry-addr { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; }
-    .entry-notes { flex: 1; display: flex; flex-direction: column; gap: 5px; }
-    .entry-notes textarea { min-height: 72px; resize: vertical; line-height: 1.5; }
+
+    /* Left column — photo + address + notes */
+    .entry-left {
+      display: flex; flex-direction: column; width: 55%; border-right: 1px solid #f1f5f9;
+    }
+    .entry-photo {
+      width: 100%; height: 170px; object-fit: cover; display: block; flex-shrink: 0;
+    }
+    .entry-photo-placeholder {
+      width: 100%; height: 170px; background: #f8fafc;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #d1d5db; font-size: 32px; gap: 6px; flex-shrink: 0;
+    }
+    .entry-photo-placeholder span { font-size: 11px; color: #9ca3af; }
+    .entry-img-input {
+      border: none; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;
+      padding: 7px 12px; font-size: 11px; color: #9ca3af; width: 100%;
+      font-family: inherit; outline: none; background: #fafafa;
+    }
+    .entry-img-input:focus { background: white; color: #374151; }
+    .entry-info { padding: 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .entry-info label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; }
+    .entry-info input { padding: 8px 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; width: 100%; outline: none; }
+    .entry-info input:focus { border-color: #2d5a27; }
+    .entry-info textarea { padding: 8px 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: inherit; width: 100%; outline: none; resize: vertical; min-height: 64px; line-height: 1.5; }
+    .entry-info textarea:focus { border-color: #2d5a27; }
+
+    /* Right column — deal progress */
+    .entry-right {
+      width: 45%; padding: 16px 14px; display: flex; flex-direction: column;
+    }
+    .entry-right-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+    }
+    .progress-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #9ca3af;
+    }
     .del-btn {
-      background: none; border: none; color: #d1d5db; font-size: 17px;
-      cursor: pointer; padding: 4px 6px; border-radius: 6px; margin-top: 20px; flex-shrink: 0;
-      transition: color 0.2s, background 0.2s;
+      background: none; border: none; color: #d1d5db; font-size: 15px;
+      cursor: pointer; padding: 3px 5px; border-radius: 6px; flex-shrink: 0;
+      transition: color 0.2s, background 0.2s; line-height: 1;
     }
     .del-btn:hover { color: #ef4444; background: #fef2f2; }
-    .crm-empty { text-align: center; color: #9ca3af; padding: 50px 0; font-size: 15px; }
+
+    .status-btn {
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; padding: 9px 12px; margin-bottom: 6px;
+      border: 1.5px solid #e2e8f0; border-radius: 9px;
+      background: white; color: #6b7280; font-size: 13px; font-weight: 600;
+      cursor: pointer; text-align: left; transition: all 0.15s; font-family: inherit;
+    }
+    .status-btn::before { content: "○"; font-size: 14px; flex-shrink: 0; }
+    .status-btn:hover { border-color: #9ca3af; color: #374151; background: #f9fafb; }
+    .status-btn.active::before { content: "●"; }
+    .status-btn.s-texted.active        { border-color:#6b7280; background:#f3f4f6; color:#374151; }
+    .status-btn.s-called.active        { border-color:#2563eb; background:#eff6ff; color:#1d4ed8; }
+    .status-btn.s-loi.active           { border-color:#d97706; background:#fffbeb; color:#b45309; }
+    .status-btn.s-followup.active      { border-color:#7c3aed; background:#f5f3ff; color:#6d28d9; }
+    .status-btn.s-contract.active      { border-color:#16a34a; background:#f0fdf4; color:#15803d; }
+
+    @media (max-width: 600px) {
+      .entry { flex-direction: column; }
+      .entry-left, .entry-right { width: 100%; border-right: none; border-bottom: 1px solid #f1f5f9; }
+    }
 
     /* ── Text Generator extras ── */
     .api-row {
@@ -742,7 +799,7 @@
       if (agent) lines.push(`Agent: ${agent}`);
       if (phone) lines.push(`Phone: ${phone}`);
       lines.push(`Texted: ${date}`);
-      entries.unshift({ address, notes: lines.join("\n") });
+      entries.unshift({ address, notes: lines.join("\n"), status: "texted", imageUrl: "" });
       crmSave(entries);
     }
 
@@ -962,6 +1019,14 @@ Allgroupproperties@gmail.com`;
     /* ════════ CRM ════════ */
     const CRM_KEY = "agp_crm";
 
+    const STATUSES = [
+      { key: "texted",        label: "Texted",         cls: "s-texted"   },
+      { key: "called",        label: "Called",         cls: "s-called"   },
+      { key: "loi_sent",      label: "LOI Sent",       cls: "s-loi"      },
+      { key: "follow_up",     label: "Follow Up",      cls: "s-followup" },
+      { key: "contract_sent", label: "Contract Sent",  cls: "s-contract" },
+    ];
+
     function crmLoad() {
       try { return JSON.parse(localStorage.getItem(CRM_KEY)) || []; }
       catch { return []; }
@@ -975,20 +1040,86 @@ Allgroupproperties@gmail.com`;
         wrap.innerHTML = '<div class="crm-empty">No properties yet. Click "+ Add Property" to get started.</div>';
         return;
       }
-      wrap.innerHTML = entries.map((e,i) => `
-        <div class="entry">
-          <div class="entry-addr">
-            <label>Address</label>
-            <input type="text" value="${escH(e.address)}" placeholder="123 Main St"
-              oninput="crmUpdate(${i},'address',this.value)" />
-          </div>
-          <div class="entry-notes">
-            <label>Progress / Notes</label>
-            <textarea placeholder="Where are you at with this property..."
-              oninput="crmUpdate(${i},'notes',this.value)">${escH(e.notes)}</textarea>
-          </div>
-          <button class="del-btn" onclick="crmDelete(${i})" title="Remove">✕</button>
-        </div>`).join("");
+      wrap.innerHTML = entries.map((e, i) => {
+        const imgHtml = e.imageUrl
+          ? `<img class="entry-photo" src="${escH(e.imageUrl)}" alt="Property"
+               onerror="this.style.display='none';document.getElementById('ph-${i}').style.display='flex'" />
+             <div class="entry-photo-placeholder" id="ph-${i}" style="display:none">🏠<span>Image failed to load</span></div>`
+          : `<div class="entry-photo-placeholder" id="ph-${i}">🏠<span>No photo yet</span></div>`;
+
+        const statusBtns = STATUSES.map(s => {
+          const active = (e.status || "texted") === s.key;
+          return `<button class="status-btn ${s.cls}${active ? " active" : ""}"
+            onclick="setStatus(${i},'${s.key}')">${s.label}</button>`;
+        }).join("");
+
+        return `
+          <div class="entry" id="entry-${i}">
+            <div class="entry-left">
+              ${imgHtml}
+              <input class="entry-img-input" type="text"
+                placeholder="Paste Zillow photo URL (optional)"
+                value="${escH(e.imageUrl || '')}"
+                oninput="crmUpdate(${i},'imageUrl',this.value);refreshPhoto(${i},this.value)" />
+              <div class="entry-info">
+                <div>
+                  <label>Address</label>
+                  <input type="text" value="${escH(e.address || '')}" placeholder="123 Main St"
+                    oninput="crmUpdate(${i},'address',this.value)" />
+                </div>
+                <div>
+                  <label>Notes</label>
+                  <textarea placeholder="Notes about this property..."
+                    oninput="crmUpdate(${i},'notes',this.value)">${escH(e.notes || '')}</textarea>
+                </div>
+              </div>
+            </div>
+            <div class="entry-right">
+              <div class="entry-right-header">
+                <span class="progress-label">Deal Progress</span>
+                <button class="del-btn" onclick="crmDelete(${i})" title="Remove">✕</button>
+              </div>
+              ${statusBtns}
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    function setStatus(i, status) {
+      const entries = crmLoad();
+      if (entries[i]) { entries[i].status = status; crmSave(entries); }
+      // Update buttons in place without full re-render
+      const entry = document.getElementById(`entry-${i}`);
+      if (!entry) return;
+      entry.querySelectorAll(".status-btn").forEach(btn => {
+        const isActive = STATUSES.find(s => s.label === btn.textContent)?.key === status;
+        btn.classList.toggle("active", isActive);
+      });
+    }
+
+    function refreshPhoto(i, url) {
+      const entry = document.getElementById(`entry-${i}`);
+      if (!entry) return;
+      const left = entry.querySelector(".entry-left");
+      const existing = left.querySelector(".entry-photo, .entry-photo-placeholder");
+      if (url) {
+        const img = document.createElement("img");
+        img.className = "entry-photo";
+        img.src = url;
+        img.alt = "Property";
+        img.onerror = () => {
+          img.style.display = "none";
+          document.getElementById(`ph-${i}`).style.display = "flex";
+        };
+        if (existing) left.replaceChild(img, existing);
+        const ph = document.getElementById(`ph-${i}`);
+        if (ph) ph.style.display = "none";
+      } else {
+        const ph = document.getElementById(`ph-${i}`);
+        if (ph) { ph.style.display = "flex"; }
+        const img = left.querySelector(".entry-photo");
+        if (img) img.remove();
+      }
     }
 
     function escH(s) {
