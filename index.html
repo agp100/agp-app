@@ -209,6 +209,87 @@
       .entry-left, .entry-right { width: 100%; border-right: none; border-bottom: 1px solid #f1f5f9; }
     }
 
+    /* ── Offer Machine (dark theme) ── */
+    #tab-offer {
+      background: #0f172a; min-height: 100vh;
+      padding: 24px 16px 48px; max-width: 480px; margin: 0 auto;
+    }
+    .om-title {
+      font-size: 22px; font-weight: 800; color: #f1f5f9;
+      letter-spacing: 0.03em; margin-bottom: 4px;
+    }
+    .om-sub { font-size: 12px; color: #64748b; margin-bottom: 24px; }
+    .om-card {
+      background: #1e293b; border-radius: 16px;
+      padding: 20px; margin-bottom: 16px;
+    }
+    .om-card-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #64748b; margin-bottom: 14px;
+    }
+    .om-field { margin-bottom: 14px; }
+    .om-field:last-child { margin-bottom: 0; }
+    .om-field label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: #94a3b8; margin-bottom: 6px;
+    }
+    .om-field input {
+      width: 100%; padding: 12px 14px;
+      background: #0f172a; border: 1.5px solid #334155;
+      border-radius: 10px; color: #f1f5f9; font-size: 16px;
+      font-family: inherit; outline: none; transition: border-color 0.2s;
+    }
+    .om-field input:focus { border-color: #22c55e; }
+    .om-field input::placeholder { color: #475569; }
+    .om-btn {
+      width: 100%; padding: 14px;
+      background: #22c55e; color: #0f172a;
+      border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 800; cursor: pointer;
+      transition: background 0.2s; letter-spacing: 0.01em;
+    }
+    .om-btn:hover { background: #16a34a; }
+    .om-btn-reset {
+      width: 100%; padding: 12px;
+      background: transparent; color: #475569;
+      border: 1.5px solid #334155; border-radius: 12px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; margin-top: 10px; font-family: inherit;
+    }
+    .om-btn-reset:hover { border-color: #ef4444; color: #ef4444; }
+    .om-headline {
+      text-align: center; padding: 10px 0 18px;
+    }
+    .om-headline-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #64748b; margin-bottom: 6px;
+    }
+    .om-headline-value {
+      font-size: 42px; font-weight: 900; color: #22c55e;
+      letter-spacing: -0.02em; line-height: 1;
+    }
+    .om-stats { display: flex; gap: 10px; margin-top: 18px; }
+    .om-stat {
+      flex: 1; background: #0f172a; border-radius: 10px;
+      padding: 14px 12px; text-align: center;
+    }
+    .om-stat-label { font-size: 10px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+    .om-stat-value { font-size: 20px; font-weight: 800; color: #f1f5f9; }
+    .om-divider { border: none; border-top: 1px solid #1e293b; margin: 0; }
+    .om-coc {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 14px; padding: 14px 16px;
+      background: #0f172a; border-radius: 12px;
+    }
+    .om-coc-label { font-size: 13px; color: #94a3b8; font-weight: 600; }
+    .om-coc-value {
+      font-size: 28px; font-weight: 900; letter-spacing: -0.01em;
+    }
+    .om-coc-value.green { color: #22c55e; }
+    .om-coc-value.yellow { color: #fbbf24; }
+    .om-coc-value.red { color: #f87171; }
+    .om-hidden { display: none; }
+
     /* ── Text Generator extras ── */
     .api-row {
       display: flex; align-items: center; justify-content: space-between;
@@ -348,6 +429,7 @@
       <button class="tab-btn active" id="tb-text"  onclick="showTab('text')">Text Generator</button>
       <button class="tab-btn"        id="tb-loi"   onclick="showTab('loi')">LOI Generator</button>
       <button class="tab-btn"        id="tb-crm"   onclick="showTab('crm')">Property CRM</button>
+      <button class="tab-btn"        id="tb-offer" onclick="showTab('offer')" style="background:#0f172a;color:#22c55e;">Offer Machine</button>
     </nav>
   </div>
 
@@ -536,6 +618,67 @@
   </div>
 
   <!-- ════════════════════════════════
+       TAB 4 — Offer Machine
+       ════════════════════════════════ -->
+  <div id="tab-offer" class="hidden">
+
+    <div class="om-title">Offer Machine</div>
+    <div class="om-sub">Calculate your max offer price in seconds</div>
+
+    <!-- Inputs -->
+    <div class="om-card">
+      <div class="om-card-label">Property Financials</div>
+      <div class="om-field">
+        <label>Monthly Rent</label>
+        <input type="number" id="om-rent" placeholder="$0" oninput="offerCalc()" />
+      </div>
+      <div class="om-field">
+        <label>Monthly Taxes</label>
+        <input type="number" id="om-taxes" placeholder="$0" oninput="offerCalc()" />
+      </div>
+      <div class="om-field">
+        <label>Monthly Insurance</label>
+        <input type="number" id="om-insurance" placeholder="$0" oninput="offerCalc()" />
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="om-card om-hidden" id="om-results">
+      <div class="om-headline">
+        <div class="om-headline-label">Max Offer Price</div>
+        <div class="om-headline-value" id="om-max-offer">—</div>
+      </div>
+      <hr class="om-divider" />
+      <div class="om-stats">
+        <div class="om-stat">
+          <div class="om-stat-label">Monthly Cash Flow</div>
+          <div class="om-stat-value" id="om-monthly">—</div>
+        </div>
+        <div class="om-stat">
+          <div class="om-stat-label">Annual Cash Flow</div>
+          <div class="om-stat-value" id="om-annual">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- What-if CoC -->
+    <div class="om-card om-hidden" id="om-whatif-card">
+      <div class="om-card-label">What If I Pay This Price?</div>
+      <div class="om-field">
+        <label>Your Offer Price</label>
+        <input type="number" id="om-custom-price" placeholder="$0" oninput="offerCoc()" />
+      </div>
+      <div class="om-coc om-hidden" id="om-coc-row">
+        <span class="om-coc-label">Cash-on-Cash Return</span>
+        <span class="om-coc-value" id="om-coc-val">—</span>
+      </div>
+    </div>
+
+    <button class="om-btn-reset" onclick="offerReset()">Reset</button>
+
+  </div>
+
+  <!-- ════════════════════════════════
        PRINT VIEW (hidden on screen)
        ════════════════════════════════ -->
   <div id="print-view">
@@ -642,10 +785,12 @@
   <script>
     /* ── Tab switching ── */
     function showTab(t) {
-      ["text","loi","crm"].forEach(id => {
+      ["text","loi","crm","offer"].forEach(id => {
         document.getElementById("tab-"+id).classList.toggle("hidden", id !== t);
         document.getElementById("tb-"+id).classList.toggle("active", id === t);
       });
+      // Dark background for offer tab
+      document.body.style.background = t === "offer" ? "#0f172a" : "";
     }
 
     /* ════════ TEXT GENERATOR ════════ */
@@ -1149,6 +1294,62 @@ Allgroupproperties@gmail.com`;
     function resetBtn(id, label) {
       const b = document.getElementById(id);
       if (b) { b.textContent = label; b.classList.remove("success"); }
+    }
+
+    /* ════════ OFFER MACHINE ════════ */
+    function offerFmt(n) {
+      return "$" + Math.round(n).toLocaleString("en-US");
+    }
+
+    function offerCalc() {
+      const rent      = parseFloat(document.getElementById("om-rent").value)      || 0;
+      const taxes     = parseFloat(document.getElementById("om-taxes").value)     || 0;
+      const insurance = parseFloat(document.getElementById("om-insurance").value) || 0;
+
+      if (!rent) {
+        document.getElementById("om-results").classList.add("om-hidden");
+        document.getElementById("om-whatif-card").classList.add("om-hidden");
+        return;
+      }
+
+      // The Formula
+      const netMonthly = rent - taxes - insurance;   // Step 1
+      const adjusted   = netMonthly * 0.80;           // Step 2
+      const annual     = adjusted * 12;               // Step 3
+      const maxOffer   = annual * 5;                  // Step 4
+
+      document.getElementById("om-max-offer").textContent = offerFmt(maxOffer);
+      document.getElementById("om-monthly").textContent   = offerFmt(adjusted);
+      document.getElementById("om-annual").textContent    = offerFmt(annual);
+
+      document.getElementById("om-results").classList.remove("om-hidden");
+      document.getElementById("om-whatif-card").classList.remove("om-hidden");
+
+      // Re-run CoC if a custom price is already entered
+      offerCoc();
+    }
+
+    function offerCoc() {
+      const annual      = parseFloat(document.getElementById("om-annual").textContent.replace(/[$,]/g, "")) || 0;
+      const customPrice = parseFloat(document.getElementById("om-custom-price").value) || 0;
+      const cocRow      = document.getElementById("om-coc-row");
+      const cocVal      = document.getElementById("om-coc-val");
+
+      if (!customPrice || !annual) { cocRow.classList.add("om-hidden"); return; }
+
+      const coc = (annual / customPrice) * 100;
+      cocVal.textContent = coc.toFixed(1) + "%";
+      cocVal.className   = "om-coc-value " + (coc >= 20 ? "green" : coc >= 15 ? "yellow" : "red");
+      cocRow.classList.remove("om-hidden");
+    }
+
+    function offerReset() {
+      ["om-rent","om-taxes","om-insurance","om-custom-price"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+      document.getElementById("om-results").classList.add("om-hidden");
+      document.getElementById("om-whatif-card").classList.add("om-hidden");
+      document.getElementById("om-coc-row").classList.add("om-hidden");
     }
 
     /* ── Init ── */
