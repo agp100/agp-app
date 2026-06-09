@@ -995,7 +995,7 @@
       if (agent) lines.push(`Agent: ${agent}`);
       if (phone) lines.push(`Phone: ${phone}`);
       lines.push(`Added: ${date}`);
-      entries.unshift({ address, notes: lines.join("\n"), status: "not_texted", imageUrl: zillowUrl ? "__loading__" : "", generatedText: generatedText || "" });
+      entries.unshift({ address, notes: lines.join("\n"), status: "not_texted", imageUrl: zillowUrl ? "__loading__" : "", generatedText: generatedText || "", zillowUrl: zillowUrl || "" });
       crmSave(entries);
       if (zillowUrl) {
         fetchZillowPhoto(zillowUrl).then(photoUrl => {
@@ -1280,6 +1280,12 @@ Allgroupproperties@gmail.com`;
                   <label>Notes</label>
                   <textarea placeholder="Notes about this property..."
                     oninput="crmUpdate(${i},'notes',this.value)">${escH(e.notes || '')}</textarea>
+                </div>
+                <div>
+                  <label>Zillow Link</label>
+                  <input type="text" value="${escH(e.zillowUrl || '')}" placeholder="Paste Zillow URL"
+                    oninput="crmUpdate(${i},'zillowUrl',this.value)" />
+                  ${e.zillowUrl && e.zillowUrl !== '__loading__' ? `<a href="${escH(e.zillowUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:5px;font-size:12px;font-weight:600;color:#2d5a27;text-decoration:none;">View on Zillow ↗</a>` : ''}
                 </div>
               </div>
             </div>
