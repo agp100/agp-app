@@ -1,4 +1,4 @@
-const CACHE = "agp-v2";
+const CACHE = "agp-v3";
 const ASSETS = [
   "./index.html",
   "./manifest.json",
