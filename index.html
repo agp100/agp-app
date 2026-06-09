@@ -203,6 +203,25 @@
     .status-btn.s-loi.active           { border-color:#d97706; background:#fffbeb; color:#b45309; }
     .status-btn.s-followup.active      { border-color:#7c3aed; background:#f5f3ff; color:#6d28d9; }
     .status-btn.s-contract.active      { border-color:#16a34a; background:#f0fdf4; color:#15803d; }
+    .status-btn.s-not-texted.active    { border-color:#ea580c; background:#fff7ed; color:#c2410c; }
+
+    .generated-text-panel {
+      margin-top: 10px; padding: 12px;
+      background: #f8fafc; border: 1.5px solid #e2e8f0;
+      border-radius: 8px; font-size: 13px; line-height: 1.6;
+      color: #1a1a1a; white-space: pre-wrap; display: none;
+      word-break: break-word;
+    }
+    .generated-text-panel.visible { display: block; }
+    .gtp-copy {
+      display: block; margin-top: 8px; width: 100%;
+      padding: 8px; background: white;
+      border: 1.5px solid #e2e8f0; border-radius: 7px;
+      font-size: 12px; font-weight: 600; color: #374151;
+      cursor: pointer; text-align: center; font-family: inherit;
+      transition: all 0.15s;
+    }
+    .gtp-copy:hover { border-color: #2d5a27; color: #2d5a27; }
 
     @media (max-width: 600px) {
       .entry { flex-direction: column; }
@@ -848,11 +867,13 @@
       };
     }
 
-    let _parsedFromZillow = null;  // holds last Zillow parse result
+    let _parsedFromZillow = null;
+    let _zillowUrl = null;
 
     function handleAddressInput(val) {
       const status = document.getElementById("zillow-status");
       if (val.includes("zillow.com")) {
+        _zillowUrl = val;
         const parsed = parseZillowUrl(val);
         if (parsed) {
           _parsedFromZillow = parsed;
@@ -866,8 +887,23 @@
         }
       } else {
         _parsedFromZillow = null;
+        _zillowUrl = null;
         status.textContent = "";
       }
+    }
+
+    async function fetchZillowPhoto(url) {
+      try {
+        const clean = url.split('?')[0];
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(clean)}`);
+        if (!res.ok) return '';
+        const data = await res.json();
+        const html = data.contents || '';
+        const m = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+               || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i)
+               || html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i);
+        return m ? m[1] : '';
+      } catch { return ''; }
     }
 
     async function generateText() {
@@ -931,21 +967,32 @@
       }
 
       // Auto-add to CRM using the full address
-      autoAddToCRM(fullAddr, agent, phone);
+      autoAddToCRM(fullAddr, agent, phone, rawMsg, _zillowUrl);
       const notice = document.getElementById("t-crm-notice");
       notice.classList.remove("hidden");
       setTimeout(() => notice.classList.add("hidden"), 3500);
     }
 
-    function autoAddToCRM(address, agent, phone) {
+    function autoAddToCRM(address, agent, phone, generatedText, zillowUrl) {
       const entries = crmLoad();
       const date = new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
       const lines = [];
       if (agent) lines.push(`Agent: ${agent}`);
       if (phone) lines.push(`Phone: ${phone}`);
-      lines.push(`Texted: ${date}`);
-      entries.unshift({ address, notes: lines.join("\n"), status: "texted", imageUrl: "" });
+      lines.push(`Added: ${date}`);
+      entries.unshift({ address, notes: lines.join("\n"), status: "not_texted", imageUrl: "", generatedText: generatedText || "" });
       crmSave(entries);
+      if (zillowUrl) {
+        fetchZillowPhoto(zillowUrl).then(photoUrl => {
+          if (!photoUrl) return;
+          const latest = crmLoad();
+          if (latest[0]?.address === address) {
+            latest[0].imageUrl = photoUrl;
+            crmSave(latest);
+            if (!document.getElementById('tab-crm').classList.contains('hidden')) renderCRM();
+          }
+        });
+      }
     }
 
     function copyText() {
@@ -1165,6 +1212,7 @@ Allgroupproperties@gmail.com`;
     const CRM_KEY = "agp_crm";
 
     const STATUSES = [
+      { key: "not_texted",    label: "Not Texted Yet", cls: "s-not-texted" },
       { key: "texted",        label: "Texted",         cls: "s-texted"   },
       { key: "called",        label: "Called",         cls: "s-called"   },
       { key: "loi_sent",      label: "LOI Sent",       cls: "s-loi"      },
@@ -1193,7 +1241,7 @@ Allgroupproperties@gmail.com`;
           : `<div class="entry-photo-placeholder" id="ph-${i}">🏠<span>No photo yet</span></div>`;
 
         const statusBtns = STATUSES.map(s => {
-          const active = (e.status || "texted") === s.key;
+          const active = (e.status || "not_texted") === s.key;
           return `<button class="status-btn ${s.cls}${active ? " active" : ""}"
             onclick="setStatus(${i},'${s.key}')">${s.label}</button>`;
         }).join("");
@@ -1225,6 +1273,7 @@ Allgroupproperties@gmail.com`;
                 <button class="del-btn" onclick="crmDelete(${i})" title="Remove">✕</button>
               </div>
               ${statusBtns}
+              ${e.generatedText ? `<div class="generated-text-panel" id="gtp-${i}" data-text="${escH(e.generatedText)}">${escH(e.generatedText)}<button class="gtp-copy" onclick="copyGtp(${i})">Copy Message</button></div>` : ''}
             </div>
           </div>`;
       }).join("");
@@ -1233,12 +1282,29 @@ Allgroupproperties@gmail.com`;
     function setStatus(i, status) {
       const entries = crmLoad();
       if (entries[i]) { entries[i].status = status; crmSave(entries); }
-      // Update buttons in place without full re-render
       const entry = document.getElementById(`entry-${i}`);
       if (!entry) return;
       entry.querySelectorAll(".status-btn").forEach(btn => {
         const isActive = STATUSES.find(s => s.label === btn.textContent)?.key === status;
         btn.classList.toggle("active", isActive);
+      });
+      const panel = document.getElementById(`gtp-${i}`);
+      if (panel) {
+        if (status === "not_texted") {
+          panel.classList.toggle("visible");
+        } else {
+          panel.classList.remove("visible");
+        }
+      }
+    }
+
+    function copyGtp(i) {
+      const panel = document.getElementById(`gtp-${i}`);
+      if (!panel) return;
+      const text = panel.dataset.text || '';
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = panel.querySelector('.gtp-copy');
+        if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy Message', 2000); }
       });
     }
 
