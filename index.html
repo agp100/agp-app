@@ -222,6 +222,14 @@
       transition: all 0.15s;
     }
     .gtp-copy:hover { border-color: #2d5a27; color: #2d5a27; }
+    .saved-msg-toggle {
+      width: 100%; margin-top: 8px; padding: 7px 10px;
+      background: none; border: 1.5px solid #e2e8f0; border-radius: 8px;
+      font-size: 12px; font-weight: 600; color: #6b7280;
+      cursor: pointer; text-align: left; font-family: inherit;
+      transition: all 0.15s;
+    }
+    .saved-msg-toggle:hover { border-color: #2d5a27; color: #2d5a27; }
 
     @media (max-width: 600px) {
       .entry { flex-direction: column; }
@@ -1282,6 +1290,7 @@ Allgroupproperties@gmail.com`;
                     oninput="crmUpdate(${i},'notes',this.value)">${escH(e.notes || '')}</textarea>
                 </div>
                 ${e.zillowUrl ? `<a href="${escH(e.zillowUrl)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:4px;font-size:13px;font-weight:600;color:#2d5a27;text-decoration:none;">View on Zillow ↗</a>` : ''}
+                ${e.generatedText ? `<button class="saved-msg-toggle" id="msg-toggle-${i}" onclick="toggleMsg(${i})">📋 View saved message ▾</button><div class="generated-text-panel" id="gtp-${i}" data-text="${escH(e.generatedText)}">${escH(e.generatedText)}<button class="gtp-copy" onclick="copyGtp(${i})">Copy Message</button></div>` : ''}
               </div>
             </div>
             <div class="entry-right">
@@ -1290,7 +1299,6 @@ Allgroupproperties@gmail.com`;
                 <button class="del-btn" onclick="crmDelete(${i})" title="Remove">✕</button>
               </div>
               ${statusBtns}
-              ${e.generatedText ? `<div class="generated-text-panel" id="gtp-${i}" data-text="${escH(e.generatedText)}">${escH(e.generatedText)}<button class="gtp-copy" onclick="copyGtp(${i})">Copy Message</button></div>` : ''}
             </div>
           </div>`;
       }).join("");
@@ -1306,13 +1314,21 @@ Allgroupproperties@gmail.com`;
         btn.classList.toggle("active", isActive);
       });
       const panel = document.getElementById(`gtp-${i}`);
+      const msgBtn = document.getElementById(`msg-toggle-${i}`);
       if (panel) {
         if (status === "not_texted") {
-          panel.classList.toggle("visible");
-        } else {
-          panel.classList.remove("visible");
+          const visible = panel.classList.toggle("visible");
+          if (msgBtn) msgBtn.textContent = visible ? '📋 Hide message ▴' : '📋 View saved message ▾';
         }
       }
+    }
+
+    function toggleMsg(i) {
+      const panel = document.getElementById(`gtp-${i}`);
+      const btn   = document.getElementById(`msg-toggle-${i}`);
+      if (!panel) return;
+      const visible = panel.classList.toggle("visible");
+      if (btn) btn.textContent = visible ? '📋 Hide message ▴' : '📋 View saved message ▾';
     }
 
     function copyGtp(i) {
