@@ -893,17 +893,32 @@
     }
 
     async function fetchZillowPhoto(url) {
+      const clean = url.split('?')[0];
+
+      // Try Microlink — built for link previews, handles Zillow well
       try {
-        const clean = url.split('?')[0];
-        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(clean)}`);
-        if (!res.ok) return '';
-        const data = await res.json();
-        const html = data.contents || '';
-        const m = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
-               || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i)
-               || html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i);
-        return m ? m[1] : '';
-      } catch { return ''; }
+        const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) });
+        if (res.ok) {
+          const data = await res.json();
+          const img = data?.data?.image?.url || data?.data?.screenshot?.url;
+          if (img) return img;
+        }
+      } catch {}
+
+      // Fallback: generic CORS proxy + og:image scrape
+      try {
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) });
+        if (res.ok) {
+          const data = await res.json();
+          const html = data.contents || '';
+          const m = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+                 || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i)
+                 || html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i);
+          if (m?.[1]) return m[1];
+        }
+      } catch {}
+
+      return '';
     }
 
     async function generateText() {
@@ -980,14 +995,13 @@
       if (agent) lines.push(`Agent: ${agent}`);
       if (phone) lines.push(`Phone: ${phone}`);
       lines.push(`Added: ${date}`);
-      entries.unshift({ address, notes: lines.join("\n"), status: "not_texted", imageUrl: "", generatedText: generatedText || "" });
+      entries.unshift({ address, notes: lines.join("\n"), status: "not_texted", imageUrl: zillowUrl ? "__loading__" : "", generatedText: generatedText || "" });
       crmSave(entries);
       if (zillowUrl) {
         fetchZillowPhoto(zillowUrl).then(photoUrl => {
-          if (!photoUrl) return;
           const latest = crmLoad();
           if (latest[0]?.address === address) {
-            latest[0].imageUrl = photoUrl;
+            latest[0].imageUrl = photoUrl || "";
             crmSave(latest);
             if (!document.getElementById('tab-crm').classList.contains('hidden')) renderCRM();
           }
@@ -1234,7 +1248,9 @@ Allgroupproperties@gmail.com`;
         return;
       }
       wrap.innerHTML = entries.map((e, i) => {
-        const imgHtml = e.imageUrl
+        const imgHtml = e.imageUrl === "__loading__"
+          ? `<div class="entry-photo-placeholder" id="ph-${i}">⏳<span>Fetching photo…</span></div>`
+          : e.imageUrl
           ? `<img class="entry-photo" src="${escH(e.imageUrl)}" alt="Property"
                onerror="this.style.display='none';document.getElementById('ph-${i}').style.display='flex'" />
              <div class="entry-photo-placeholder" id="ph-${i}" style="display:none">🏠<span>Image failed to load</span></div>`
