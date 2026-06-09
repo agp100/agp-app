@@ -317,6 +317,26 @@
     .om-coc-value.red { color: #f87171; }
     .om-hidden { display: none; }
 
+    .om-result-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 11px 0; border-bottom: 1px solid #334155; font-size: 14px;
+    }
+    .om-result-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .om-result-label { color: #94a3b8; font-weight: 500; }
+    .om-result-val   { color: #f1f5f9; font-weight: 700; }
+    .om-progress-wrap {
+      background: #0f172a; border-radius: 99px;
+      height: 10px; margin-top: 16px; overflow: hidden;
+    }
+    .om-progress-bar {
+      height: 100%; border-radius: 99px; width: 0%;
+      transition: width 0.45s ease, background 0.3s ease;
+    }
+    .om-verdict {
+      font-size: 12px; font-weight: 600; text-align: center;
+      margin-top: 10px; letter-spacing: 0.02em;
+    }
+
     /* ── Text Generator extras ── */
     .api-row {
       display: flex; align-items: center; justify-content: space-between;
@@ -645,60 +665,66 @@
   </div>
 
   <!-- ════════════════════════════════
-       TAB 4 — Offer Machine
+       TAB 4 — CoC Calculator
        ════════════════════════════════ -->
   <div id="tab-offer" class="hidden">
 
-    <div class="om-title">Offer Machine</div>
-    <div class="om-sub">Calculate your max offer price in seconds</div>
+    <div class="om-title">CoC Return Calculator</div>
+    <div class="om-sub">(Rent − T&amp;I) × 0.8 × 12 ÷ Total Entry Cost</div>
 
-    <!-- Inputs -->
     <div class="om-card">
-      <div class="om-card-label">Property Financials</div>
+      <div class="om-card-label">Monthly Financials</div>
       <div class="om-field">
         <label>Monthly Rent</label>
-        <input type="number" id="om-rent" placeholder="$0" oninput="offerCalc()" />
+        <input type="number" id="om-rent" placeholder="0" oninput="offerCalc()" />
       </div>
       <div class="om-field">
         <label>Monthly Taxes</label>
-        <input type="number" id="om-taxes" placeholder="$0" oninput="offerCalc()" />
+        <input type="number" id="om-taxes" placeholder="0" oninput="offerCalc()" />
       </div>
       <div class="om-field">
         <label>Monthly Insurance</label>
-        <input type="number" id="om-insurance" placeholder="$0" oninput="offerCalc()" />
+        <input type="number" id="om-insurance" placeholder="0" oninput="offerCalc()" />
       </div>
     </div>
 
-    <!-- Results -->
-    <div class="om-card om-hidden" id="om-results">
-      <div class="om-headline">
-        <div class="om-headline-label">Max Offer Price</div>
-        <div class="om-headline-value" id="om-max-offer">—</div>
-      </div>
-      <hr class="om-divider" />
-      <div class="om-stats">
-        <div class="om-stat">
-          <div class="om-stat-label">Monthly Cash Flow</div>
-          <div class="om-stat-value" id="om-monthly">—</div>
-        </div>
-        <div class="om-stat">
-          <div class="om-stat-label">Annual Cash Flow</div>
-          <div class="om-stat-value" id="om-annual">—</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- What-if CoC -->
-    <div class="om-card om-hidden" id="om-whatif-card">
-      <div class="om-card-label">What If I Pay This Price?</div>
+    <div class="om-card">
+      <div class="om-card-label">Entry Cost</div>
       <div class="om-field">
-        <label>Your Offer Price</label>
-        <input type="number" id="om-custom-price" placeholder="$0" oninput="offerCoc()" />
+        <label>Purchase Price</label>
+        <input type="number" id="om-price" placeholder="0" oninput="offerCalc()" />
       </div>
-      <div class="om-coc om-hidden" id="om-coc-row">
-        <span class="om-coc-label">Cash-on-Cash Return</span>
-        <span class="om-coc-value" id="om-coc-val">—</span>
+      <div class="om-field">
+        <label>Other Entry Costs <span style="font-size:11px;color:#475569;font-weight:400">(closing, repairs…)</span></label>
+        <input type="number" id="om-other" placeholder="0" oninput="offerCalc()" />
       </div>
+    </div>
+
+    <div class="om-card om-hidden" id="om-results">
+      <div class="om-card-label">Breakdown</div>
+      <div class="om-result-row">
+        <span class="om-result-label">Monthly T&amp;I</span>
+        <span class="om-result-val" id="om-ti">—</span>
+      </div>
+      <div class="om-result-row">
+        <span class="om-result-label">Net Monthly Income</span>
+        <span class="om-result-val" id="om-net-monthly">—</span>
+      </div>
+      <div class="om-result-row">
+        <span class="om-result-label">Annual NOI</span>
+        <span class="om-result-val" id="om-noi">—</span>
+      </div>
+    </div>
+
+    <div class="om-card om-hidden" id="om-coc-card">
+      <div class="om-headline">
+        <div class="om-headline-label">Cash-on-Cash Return</div>
+        <div class="om-headline-value" id="om-coc-val">—</div>
+      </div>
+      <div class="om-progress-wrap">
+        <div class="om-progress-bar" id="om-progress"></div>
+      </div>
+      <div class="om-verdict" id="om-verdict"></div>
     </div>
 
     <button class="om-btn-reset" onclick="offerReset()">Reset</button>
@@ -1395,7 +1421,7 @@ Allgroupproperties@gmail.com`;
       if (b) { b.textContent = label; b.classList.remove("success"); }
     }
 
-    /* ════════ OFFER MACHINE ════════ */
+    /* ════════ CoC CALCULATOR ════════ */
     function offerFmt(n) {
       return "$" + Math.round(n).toLocaleString("en-US");
     }
@@ -1404,51 +1430,61 @@ Allgroupproperties@gmail.com`;
       const rent      = parseFloat(document.getElementById("om-rent").value)      || 0;
       const taxes     = parseFloat(document.getElementById("om-taxes").value)     || 0;
       const insurance = parseFloat(document.getElementById("om-insurance").value) || 0;
+      const price     = parseFloat(document.getElementById("om-price").value)     || 0;
+      const other     = parseFloat(document.getElementById("om-other").value)     || 0;
 
-      if (!rent) {
-        document.getElementById("om-results").classList.add("om-hidden");
-        document.getElementById("om-whatif-card").classList.add("om-hidden");
+      const resultsEl = document.getElementById("om-results");
+      const cocCardEl = document.getElementById("om-coc-card");
+
+      if (!rent && !price) {
+        resultsEl.classList.add("om-hidden");
+        cocCardEl.classList.add("om-hidden");
         return;
       }
 
-      // The Formula
-      const netMonthly = rent - taxes - insurance;   // Step 1
-      const adjusted   = netMonthly * 0.80;           // Step 2
-      const annual     = adjusted * 12;               // Step 3
-      const maxOffer   = annual * 5;                  // Step 4
+      const ti         = taxes + insurance;
+      const netMonthly = (rent - ti) * 0.8;
+      const annualNOI  = netMonthly * 12;
+      const totalCost  = price + other;
 
-      document.getElementById("om-max-offer").textContent = offerFmt(maxOffer);
-      document.getElementById("om-monthly").textContent   = offerFmt(adjusted);
-      document.getElementById("om-annual").textContent    = offerFmt(annual);
+      document.getElementById("om-ti").textContent          = offerFmt(ti);
+      document.getElementById("om-net-monthly").textContent = offerFmt(netMonthly);
+      document.getElementById("om-noi").textContent         = offerFmt(annualNOI);
+      resultsEl.classList.remove("om-hidden");
 
-      document.getElementById("om-results").classList.remove("om-hidden");
-      document.getElementById("om-whatif-card").classList.remove("om-hidden");
+      if (!totalCost) { cocCardEl.classList.add("om-hidden"); return; }
 
-      // Re-run CoC if a custom price is already entered
-      offerCoc();
-    }
+      const coc        = (annualNOI / totalCost) * 100;
+      const cocValEl   = document.getElementById("om-coc-val");
+      const progressEl = document.getElementById("om-progress");
+      const verdictEl  = document.getElementById("om-verdict");
 
-    function offerCoc() {
-      const annual      = parseFloat(document.getElementById("om-annual").textContent.replace(/[$,]/g, "")) || 0;
-      const customPrice = parseFloat(document.getElementById("om-custom-price").value) || 0;
-      const cocRow      = document.getElementById("om-coc-row");
-      const cocVal      = document.getElementById("om-coc-val");
+      cocValEl.textContent = coc.toFixed(1) + "%";
 
-      if (!customPrice || !annual) { cocRow.classList.add("om-hidden"); return; }
+      let color, verdict;
+      if (coc >= 20) {
+        color = "#22c55e"; verdict = "Deal looks solid — above 20% target";
+      } else if (coc >= 15) {
+        color = "#fbbf24"; verdict = "Getting close — negotiate harder";
+      } else {
+        color = "#f87171"; verdict = "Below target — walk or renegotiate";
+      }
 
-      const coc = (annual / customPrice) * 100;
-      cocVal.textContent = coc.toFixed(1) + "%";
-      cocVal.className   = "om-coc-value " + (coc >= 20 ? "green" : coc >= 15 ? "yellow" : "red");
-      cocRow.classList.remove("om-hidden");
+      cocValEl.style.color       = color;
+      verdictEl.textContent      = verdict;
+      verdictEl.style.color      = color;
+      progressEl.style.width     = Math.min(coc / 30 * 100, 100) + "%";
+      progressEl.style.background = color;
+
+      cocCardEl.classList.remove("om-hidden");
     }
 
     function offerReset() {
-      ["om-rent","om-taxes","om-insurance","om-custom-price"].forEach(id => {
+      ["om-rent","om-taxes","om-insurance","om-price","om-other"].forEach(id => {
         document.getElementById(id).value = "";
       });
       document.getElementById("om-results").classList.add("om-hidden");
-      document.getElementById("om-whatif-card").classList.add("om-hidden");
-      document.getElementById("om-coc-row").classList.add("om-hidden");
+      document.getElementById("om-coc-card").classList.add("om-hidden");
     }
 
     /* ── Init ── */
