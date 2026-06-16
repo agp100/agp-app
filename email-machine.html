@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Machine — AGP</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0d1117" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif;
+      background: #0d1117;
+      color: #f0f6fc;
+      min-height: 100vh;
+      padding-bottom: 64px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #0d1117;
+      border-bottom: 1px solid #21262d;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .header-wordmark {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1;
+      color: #f0f6fc;
+    }
+    .header-wordmark em { color: #22c55e; font-style: normal; }
+    .header-sub { font-size: 11px; color: #6e7681; margin-top: 3px; letter-spacing: 0.01em; }
+    .btn-back {
+      display: flex; align-items: center; gap: 5px;
+      padding: 9px 14px;
+      background: #161b22;
+      border: 1.5px solid #30363d;
+      border-radius: 10px;
+      color: #8b949e;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .btn-back:hover { border-color: #6e7681; color: #c9d1d9; }
+
+    /* ── Wrap ── */
+    .wrap { max-width: 480px; margin: 0 auto; padding: 14px 14px 0; }
+
+    /* ── My Info collapsible ── */
+    .info-toggle {
+      width: 100%;
+      background: #161b22;
+      border: 1.5px solid #30363d;
+      border-radius: 14px;
+      padding: 15px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      color: #c9d1d9;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      transition: border-color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .info-toggle:hover { border-color: #6e7681; }
+    .info-toggle.open {
+      border-radius: 14px 14px 0 0;
+      border-bottom-color: transparent;
+    }
+    .info-left { display: flex; align-items: center; gap: 10px; }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #da3633; flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .dot.ok { background: #22c55e; }
+    .chevron { color: #6e7681; font-size: 11px; transition: transform 0.2s; }
+    .chevron.open { transform: rotate(180deg); }
+
+    .info-panel {
+      display: none;
+      background: #161b22;
+      border: 1.5px solid #30363d;
+      border-top: none;
+      border-radius: 0 0 14px 14px;
+      padding: 6px 18px 18px;
+    }
+    .info-panel.open { display: block; }
+
+    /* ── Cards ── */
+    .card {
+      background: #161b22;
+      border: 1.5px solid #21262d;
+      border-radius: 14px;
+      padding: 18px;
+      margin-top: 12px;
+    }
+    .card-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: #6e7681;
+      margin-bottom: 14px;
+    }
+
+    /* ── Fields ── */
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #8b949e;
+      margin-bottom: 7px;
+    }
+    .field input {
+      width: 100%;
+      background: #0d1117;
+      border: 1.5px solid #30363d;
+      border-radius: 10px;
+      padding: 13px 14px;
+      color: #f0f6fc;
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .field input:focus { border-color: #22c55e; }
+    .field input::placeholder { color: #3d444d; }
+    .field input.shake {
+      border-color: #da3633;
+      animation: shake 0.35s ease;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-6px); }
+      60%      { transform: translateX(6px); }
+    }
+    .hint { font-size: 11px; color: #6e7681; font-weight: 400; margin-left: 4px; }
+
+    /* ── Tone buttons ── */
+    .tone-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .tone-btn {
+      padding: 14px 6px 12px;
+      border: 2px solid #30363d;
+      border-radius: 12px;
+      background: #0d1117;
+      color: #8b949e;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      line-height: 1.3;
+    }
+    .tone-icon { font-size: 20px; display: block; margin-bottom: 5px; }
+    .tone-btn:active { transform: scale(0.96); }
+    .tone-btn.active {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.07);
+      color: #22c55e;
+    }
+
+    /* ── Generate button ── */
+    .btn-generate {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 14px;
+      padding: 20px;
+      background: #22c55e;
+      color: #0d1117;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: background 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-generate:hover { background: #16a34a; }
+    .btn-generate:active { transform: scale(0.98); }
+
+    /* ── Result ── */
+    .result { display: none; margin-top: 14px; }
+    .result.visible { display: block; }
+
+    .subject-bar {
+      background: #161b22;
+      border: 1.5px solid #21262d;
+      border-bottom: none;
+      border-radius: 14px 14px 0 0;
+      padding: 14px 18px 12px;
+    }
+    .subject-eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: #6e7681;
+      margin-bottom: 5px;
+    }
+    .subject-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: #f0f6fc;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .body-wrap {
+      background: #161b22;
+      border: 1.5px solid #21262d;
+      border-top: 1px solid #0d1117;
+      border-radius: 0 0 14px 14px;
+    }
+    #result-body {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #c9d1d9;
+      font-size: 15px;
+      font-family: inherit;
+      line-height: 1.8;
+      padding: 16px 18px;
+      resize: none;
+      min-height: 260px;
+      display: block;
+    }
+
+    /* ── Action buttons ── */
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .btn {
+      padding: 17px 10px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      text-align: center;
+      line-height: 1;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-copy {
+      background: #161b22;
+      color: #c9d1d9;
+      border: 2px solid #30363d;
+    }
+    .btn-copy:hover { border-color: #22c55e; color: #22c55e; }
+    .btn-copy.copied {
+      border-color: #22c55e;
+      background: rgba(34,197,94,0.08);
+      color: #22c55e;
+    }
+
+    .btn-mailto {
+      background: #22c55e;
+      color: #0d1117;
+    }
+    .btn-mailto:hover { background: #16a34a; }
+
+    .actions-hint {
+      text-align: center;
+      font-size: 11px;
+      color: #6e7681;
+      margin-top: 8px;
+      padding: 0 4px;
+    }
+
+    /* ── Utility ── */
+    .gap { margin-top: 14px; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div>
+      <div class="header-wordmark">Email <em>Machine</em></div>
+      <div class="header-sub">Cold outreach for real estate wholesaling</div>
+    </div>
+    <a class="btn-back" href="./index.html">← Back</a>
+  </header>
+
+  <div class="wrap">
+
+    <!-- ── My Info ── -->
+    <button class="info-toggle" id="info-toggle" onclick="toggleInfo()">
+      <div class="info-left">
+        <div class="dot" id="dot"></div>
+        <span>My Info</span>
+      </div>
+      <span class="chevron" id="chevron">▾</span>
+    </button>
+    <div class="info-panel" id="info-panel">
+      <div class="gap">
+        <div class="field">
+          <label>My Name</label>
+          <input type="text" id="my-name" placeholder="Ayden Permel"
+                 autocomplete="name" oninput="saveInfo()" />
+        </div>
+        <div class="field">
+          <label>My Phone</label>
+          <input type="tel" id="my-phone" placeholder="(757) 778-0312"
+                 autocomplete="tel" oninput="saveInfo()" />
+        </div>
+        <div class="field">
+          <label>My Email</label>
+          <input type="email" id="my-email" placeholder="you@email.com"
+                 autocomplete="email" oninput="saveInfo()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Inputs ── -->
+    <div class="card">
+      <div class="card-label">Property Details</div>
+
+      <div class="field">
+        <label>Property Address</label>
+        <input type="text" id="address"
+               placeholder="123 Oak St, Tampa FL 33601" autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label>Agent Name <span class="hint">— leave blank to use "there"</span></label>
+        <input type="text" id="agent-name"
+               placeholder="Josh Latham" autocomplete="off" />
+      </div>
+
+      <div class="field" style="margin-bottom:0">
+        <label>Tone</label>
+        <div class="tone-row">
+          <button class="tone-btn active" id="tone-investor" onclick="setTone('investor')">
+            <span class="tone-icon">💼</span>Investor
+          </button>
+          <button class="tone-btn" id="tone-neutral" onclick="setTone('neutral')">
+            <span class="tone-icon">🤝</span>Neutral
+          </button>
+          <button class="tone-btn" id="tone-soft" onclick="setTone('soft')">
+            <span class="tone-icon">👋</span>Soft
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-generate" onclick="generate()">
+      <span>✦</span> Generate Email
+    </button>
+
+    <!-- ── Result ── -->
+    <div class="result" id="result">
+      <div class="subject-bar">
+        <div class="subject-eyebrow">Subject Line</div>
+        <div class="subject-text" id="result-subject"></div>
+      </div>
+      <div class="body-wrap">
+        <textarea id="result-body" spellcheck="true"></textarea>
+      </div>
+      <div class="actions">
+        <button class="btn btn-copy" id="btn-copy" onclick="copyEmail()">📋 Copy Email</button>
+        <button class="btn btn-mailto" onclick="openEmail()">✉️ Open in Email</button>
+      </div>
+      <div class="actions-hint">Open in Email leaves the To: field blank — add the agent's address</div>
+    </div>
+
+  </div>
+
+  <script>
+    const KEY = 'agp-email-machine';
+    let currentTone = 'investor';
+    let panelOpen   = false;
+
+    /* ─── My Info ─── */
+    function loadInfo() {
+      const d = JSON.parse(localStorage.getItem(KEY) || '{}');
+      if (d.name)  document.getElementById('my-name').value  = d.name;
+      if (d.phone) document.getElementById('my-phone').value = d.phone;
+      if (d.email) document.getElementById('my-email').value = d.email;
+      refreshDot();
+      if (!d.name || !d.phone || !d.email) openInfo();
+    }
+
+    function saveInfo() {
+      localStorage.setItem(KEY, JSON.stringify({
+        name:  document.getElementById('my-name').value.trim(),
+        phone: document.getElementById('my-phone').value.trim(),
+        email: document.getElementById('my-email').value.trim(),
+      }));
+      refreshDot();
+    }
+
+    function refreshDot() {
+      const d = JSON.parse(localStorage.getItem(KEY) || '{}');
+      document.getElementById('dot').className = 'dot' + (d.name && d.phone && d.email ? ' ok' : '');
+    }
+
+    function openInfo() {
+      panelOpen = true;
+      document.getElementById('info-panel').classList.add('open');
+      document.getElementById('info-toggle').classList.add('open');
+      document.getElementById('chevron').classList.add('open');
+    }
+
+    function toggleInfo() {
+      panelOpen = !panelOpen;
+      document.getElementById('info-panel').classList.toggle('open', panelOpen);
+      document.getElementById('info-toggle').classList.toggle('open', panelOpen);
+      document.getElementById('chevron').classList.toggle('open', panelOpen);
+    }
+
+    /* ─── Tone ─── */
+    function setTone(t) {
+      currentTone = t;
+      ['investor', 'neutral', 'soft'].forEach(id =>
+        document.getElementById('tone-' + id).classList.toggle('active', id === t)
+      );
+    }
+
+    /* ─── Templates ─── */
+    const TEMPLATES = {
+      investor: {
+        subject: 'Cash offer — [A]',
+        body:
+`Hi [G],
+
+I'm a local investor and I'd like to make a cash offer on [A]. I buy as-is, can close on your seller's timeline, and there's no financing or appraisal to slow things down.
+
+Before I send numbers over, could you tell me a bit about the property's condition — anything notable with the roof, HVAC, foundation, or any deferred repairs? That just helps me put my strongest as-is offer in front of your seller quickly.
+
+Appreciate your time. I can move fast once I hear back.
+
+[N]
+[P] · [E]`
+      },
+      neutral: {
+        subject: 'Interested in [A]',
+        body:
+`Hi [G],
+
+I'm very interested in purchasing [A] and would like to get an offer over to you as soon as possible.
+
+To make sure my offer is accurate, could you share some detail on the current condition of the home — anything notable about the major systems, or any repairs the property needs?
+
+Once I hear back I'll have an offer to you quickly. Thanks for your help.
+
+[N]
+[P] · [E]`
+      },
+      soft: {
+        subject: 'Quick question on [A]',
+        body:
+`Hi [G],
+
+[A] caught my eye. Before I go further, I wanted to ask how the house is holding up condition-wise — is it more move-in ready, or does it need some work?
+
+I'm an active buyer in the area, and if it's the right fit I'd like to get an offer to you fast. Happy to work around your seller's timeline.
+
+Thanks,
+[N]
+[P] · [E]`
+      }
+    };
+
+    function fill(str, a, g, n, p, e) {
+      return str
+        .replace(/\[A\]/g, a)
+        .replace(/\[G\]/g, g)
+        .replace(/\[N\]/g, n)
+        .replace(/\[P\]/g, p)
+        .replace(/\[E\]/g, e);
+    }
+
+    /* ─── Generate ─── */
+    function generate() {
+      const addrEl  = document.getElementById('address');
+      const address = addrEl.value.trim();
+
+      if (!address) {
+        addrEl.classList.remove('shake');
+        void addrEl.offsetWidth; // reflow to restart animation
+        addrEl.classList.add('shake');
+        addrEl.focus();
+        setTimeout(() => addrEl.classList.remove('shake'), 500);
+        return;
+      }
+
+      const agent = document.getElementById('agent-name').value.trim() || 'there';
+      const d = JSON.parse(localStorage.getItem(KEY) || '{}');
+      const name  = d.name  || '[My Name]';
+      const phone = d.phone || '[Phone]';
+      const email = d.email || '[Email]';
+
+      const tmpl   = TEMPLATES[currentTone];
+      const subject = fill(tmpl.subject, address, agent, name, phone, email);
+      const body    = fill(tmpl.body,    address, agent, name, phone, email);
+
+      document.getElementById('result-subject').textContent = subject;
+
+      const ta = document.getElementById('result-body');
+      ta.value = body;
+      ta.style.height = 'auto';
+      ta.style.height = (ta.scrollHeight + 2) + 'px';
+
+      const resultEl = document.getElementById('result');
+      resultEl.classList.add('visible');
+
+      const btn = document.getElementById('btn-copy');
+      btn.textContent = '📋 Copy Email';
+      btn.classList.remove('copied');
+
+      setTimeout(() => resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    }
+
+    /* ─── Copy ─── */
+    function copyEmail() {
+      const subject = document.getElementById('result-subject').textContent;
+      const body    = document.getElementById('result-body').value;
+      navigator.clipboard.writeText('Subject: ' + subject + '\n\n' + body).then(() => {
+        const btn = document.getElementById('btn-copy');
+        btn.textContent = '✓ Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 Copy Email';
+          btn.classList.remove('copied');
+        }, 2500);
+      });
+    }
+
+    /* ─── Open in email ─── */
+    function openEmail() {
+      const subject = document.getElementById('result-subject').textContent;
+      const body    = document.getElementById('result-body').value;
+      window.location.href =
+        'mailto:?subject=' + encodeURIComponent(subject) +
+        '&body='    + encodeURIComponent(body);
+    }
+
+    /* ─── Auto-resize textarea on edit ─── */
+    document.getElementById('result-body').addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight + 2) + 'px';
+    });
+
+    loadInfo();
+  </script>
+</body>
+</html>
